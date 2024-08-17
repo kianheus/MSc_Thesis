@@ -171,9 +171,20 @@ def animate_robot(
             )
             return_list.append(line_ref_traj)
         if line_ref_pos is not None:
-            line_ref_pos.set_data(
-                traj_ts["x_ts"][time_idx, 0], traj_ts["x_ts"][time_idx, 1]
-            )
+            x_data = traj_ts["x_ts"][time_idx, 0]
+            y_data = traj_ts["x_ts"][time_idx, 1]
+
+            import numpy as np
+            # Ensure that x_data and y_data are sequences
+            if not isinstance(x_data, (list, np.ndarray)):
+                x_data = [x_data]
+            if not isinstance(y_data, (list, np.ndarray)):
+                y_data = [y_data]
+
+            line_ref_pos.set_data(x_data, y_data)
+            #line_ref_pos.set_data(
+            #    traj_ts["x_ts"][time_idx, 0], traj_ts["x_ts"][time_idx, 1]
+            #)
             return_list.append(line_ref_pos)
 
         if line_robot is not None:
