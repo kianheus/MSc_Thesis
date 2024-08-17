@@ -1,0 +1,1 @@
+from ..jax_double_pendulum.robot_parameters import ROBOT_PARAMS
