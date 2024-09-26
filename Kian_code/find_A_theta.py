@@ -26,16 +26,18 @@ r = R/R.norm()
 l = sp.sqrt((xa - kx)**2 + (ya - ky)**2)
 A1 = sp.diff(l, q1).simplify()
 A2 = sp.diff(l, q2).simplify()
-sp.pprint(A1, wrap_line = False)
-sp.pprint(A2, wrap_line = False)
+if __name__ == "__main__":
+    sp.pprint(A1, wrap_line = False)
+    sp.pprint(A2, wrap_line = False)
 
 A = sp.Matrix([[A1],
                [A2]])
 
 A = sp.simplify(A)
-print(custom_pretty(A))
-print("\n")
-sp.pprint(A, wrap_line=False)
+if __name__ == "__main__":
+    print(custom_pretty(A))
+    print("\n")
+    sp.pprint(A, wrap_line=False)
 
 
 h1 = sp.atan2(Rx, Ry)
@@ -46,11 +48,13 @@ theta = sp.Matrix([[h1],
 
 Jh = theta.jacobian(q)
 Jh = sp.simplify(Jh)
-sp.pprint(Jh, wrap_line = False)
+if __name__ == "__main__":
+    sp.pprint(Jh, wrap_line = False)
 
 Jh_inv = Jh.inv()
 Jh_invtrans = Jh_inv.transpose()
 
 A_theta = Jh_invtrans * A
 A_theta = sp.simplify(A_theta)
-sp.pprint(A_theta, wrap_line = False)
+if __name__ == "__main__":
+    sp.pprint(A_theta, wrap_line = False)
