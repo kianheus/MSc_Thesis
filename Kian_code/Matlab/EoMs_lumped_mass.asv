@@ -1,7 +1,13 @@
 clc
 % Define symbolic variables and functions
-syms t q1(t) q2(t) l1 l2 J1 J2 m g xa ya
+syms t q1(t) q2(t) %l1 l2 m g xa ya
 
+l1 = 1;
+l2 = 2;
+m = 3;
+g = 10;
+xa = 4;
+ya = 5;
 q = [q1(t); q2(t)];
 
 %% 
@@ -11,10 +17,6 @@ kx = l1 * cos(q1(t)) + l2 * cos(q2(t));
 ky = l1 * sin(q1(t)) + l2 * sin(q2(t));
 
 k = [kx; ky];
-
-% Derivatives of k with respect to q1 and q2
-dkdq1 = diff(k, q1(t));
-dkdq2 = diff(k, q2(t));
 
 %%
 
@@ -61,8 +63,8 @@ disp('Jacobian Jh:');
 pretty(Jh)
 
 % Compute the inverse and the transpose of the inverse of Jh
-Jh_inv = inv(Jh);
-Jh_invtrans = transpose(Jh_inv);
+Jh_inv = simplify(inv(Jh));
+Jh_invtrans = simplify(transpose(Jh_inv));
 
 % Compute A_theta
 A_theta = Jh_invtrans * A;
@@ -97,16 +99,11 @@ V = m * g * y2;
 % Lagrangian
 L = T - V;
 
-% Generalized coordinates and velocities
-q_dot = [diff(q1, t); diff(q2, t)];
-q_ddot = [diff(q_dot(1), t); diff(q_dot(2), t)];
-
 % Replacements for Lagrangian equations
-replacements = cell(2 * 3, 2);
 old_vars = cell(6, 1);
 new_vars = cell(6, 1);
 
-% Populate the replacements array
+% Populate the old_vars and new_vars
 for i = 1:2
     old_vars{(i-1)*3 + 1} = diff(q(i), t, 2); % 2nd derivative of q_i
     new_vars{(i-1)*3 + 1} = sym(['ddq', num2str(i)]); % Symbol for 2nd derivative
@@ -117,9 +114,6 @@ for i = 1:2
     old_vars{(i-1)*3 + 3} = q(i); % q_i
     new_vars{(i-1)*3 + 3}  = sym(['q', num2str(i)]); % Symbol for q_i
 end
-
-% Substitute in L
-%L = subs(L, old_vars, new_vars);
 
 disp(L);
 %%
@@ -149,50 +143,39 @@ for i = 1:2
     end
 end
 
-disp(M);
+disp('Mass Matrix (M):');
+pretty(M);
 %%
-% Coriolis matrix
+% Coriolis and centrigual matrix
 C = sym(zeros(2));
 for i = 1:2
     for j = 1:2
         for k = 1:2            
-            %coriolis_term = 
-            C(i, j) = C(i, j) + 0.5 * (diff(M4C(i, j), q(k)) + diff(M4C(i, k), q(j)) - diff(M4C(j, k), q(i))) * diff(q(k), t);
+            coriolis_term = 0.5 * (diff(M4C(i, j), q(k)) + diff(M4C(i, k), q(j)) ...
+                - diff(M4C(j, k), q(i))) * diff(q(k), t);
+            C(i, j) = C(i, j) + coriolis_term;
         end
         C(i, j) = simplify(subs(C(i, j), old_vars, new_vars));
     end
 end
 
+disp('Coriolis Matrix (C):');
+pretty(C);
 %%
 
-% Gravitational force vector
-G = zeros(2, 1);
+% Gravitational force matrix
+G = sym(zeros(2, 1));
 for i = 1:2
     G(i) = simplify(diff(V, q(i)));
     G(i) = subs(G(i), old_vars, new_vars);
 end
-
-% Print the matrices
-disp('Mass Matrix (M):');
-pretty(M);
-
-disp('Coriolis Matrix (C):');
-pretty(C);
 
 disp('Gravitational Vector (G):');
 pretty(G);
 
 %%
 
-syms t 
-syms q1(t) q2(t)  % Define q1 and q2 as functions of time
-q = [q1(t); q2(t)];     % Create the vector of generalized coordinates
+M_theta = Jh_invtrans * M * Jh_inv;
 
-% To access the derivatives correctly:
-dq1_dt = diff(q(1), t)  % Correctly computes diff(q1(t), t)
-dq2_dt = diff(q(2), t)  % Correctly computes diff(q2(t), t)
-
-disp(dq1_dt);  % Should output: diff(q1(t), t)
-disp(dq2_dt);  % Should output: diff(q2(t), t)
-
+disp(simplify(M_theta));
 

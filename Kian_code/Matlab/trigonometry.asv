@@ -1,0 +1,9 @@
+clc
+syms A B q_1 q_2
+
+a = A^2 * cos(q_1)^2 + A^2 * cos(q_2)^2 + B^2 * sin(q_1)^2 + B^2 * sin(q_2)^2 ...
+    - 2 * A^2 * cos(q_1)^2 * cos(q_2)^2 -   2 * B^2 * sin(q_1)^2 * sin(q_2)^2 ...
+    - 2 * A^2 * sin(q_1) * sin(q_2) * cos(q_1) * cos(q_2) ...
+    - 2 * A^2 * sin(q_1) * sin(q_2) * cos(q_1) * cos(q_2);
+
+disp(a);
