@@ -25,6 +25,11 @@ q2_dot = sp.diff(q2, t)
 q1_ddot = sp.diff(q1_dot, t)
 q2_ddot = sp.diff(q2_dot, t)
 
+# Generalized coordinates and velocities
+q = [q1, q2]
+q_dot = sp.Matrix([q1_dot, q2_dot])
+q_ddot = sp.Matrix([q1_ddot, q2_ddot])
+
 # Define the link lengths and masses
 m1, m2, g = sp.symbols('m1 m2 g')
 l1, l2, lc1, lc2 = sp.symbols('l1 l2 lc1 lc2')
@@ -60,10 +65,7 @@ V = V1 + V2
 # Lagrangian
 L = T - V
 
-# Generalized coordinates and velocities
-q = [q1, q2]
-q_dot = sp.Matrix([q1_dot, q2_dot])
-q_ddot = sp.Matrix([q1_ddot, q2_ddot])
+
 replacements = ()
 for i in range(2):
     replacements += ((q[i].diff(t).diff(t), sp.Symbol(f'ddq{i + 1}')),
