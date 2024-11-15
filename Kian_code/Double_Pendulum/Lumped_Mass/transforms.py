@@ -3,22 +3,25 @@ from torch import Tensor
 from typing import Tuple
 
 
-def transform_dynamical_matrices(M_q: Tensor, C_q: Tensor, G_q: Tensor, J_h: Tensor) -> Tuple[Tensor, Tensor, Tensor]:
-    
-    J_h_inv = torch.inverse(J_h)
-    J_h_inv_trans = torch.transpose(J_h_inv)
 
-    M_theta = J_h_inv_trans @ M_q @ J_h_inv
-    C_theta = None
-    G_theta = J_h_inv_trans @ G_q
+
+def transform_dynamical_matrices(M_q: Tensor, C_q: Tensor, G_q: Tensor, J_h_inv: Tensor, 
+                                J_h_inv_trans: Tensor) -> Tuple[Tensor, Tensor, Tensor]:
+    
+    
+    
+    M_th = J_h_inv_trans @ M_q @ J_h_inv
+    C_th = None
+    G_th = J_h_inv_trans @ G_q
 
     
-    return M_theta, C_theta, G_theta
+    return M_th, C_th, G_th
 
 
 def analytic_theta_1(rp: dict, q: Tensor) -> Tensor:
     
     # h1 is defined as the length between the actuator attachment point and the mass of the double pendulum
+    
     Rx = rp["xa"] - rp["l1"] * torch.cos(q[0]) - rp["l2"] * torch.cos(q[1])
     Ry = rp["ya"] - rp["l1"] * torch.sin(q[0]) - rp["l2"] * torch.sin(q[1])
     
