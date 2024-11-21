@@ -7,9 +7,9 @@ from typing import Tuple
 
 def transform_dynamical_matrices(M_q: Tensor, C_q: Tensor, G_q: Tensor, J_h_inv: Tensor, 
                                 J_h_inv_trans: Tensor) -> Tuple[Tensor, Tensor, Tensor]:
+
     
-    
-    
+    # @ performs batched matrix multiplication on the terms
     M_th = J_h_inv_trans @ M_q @ J_h_inv
     C_th = None
     G_th = J_h_inv_trans @ G_q
@@ -39,6 +39,6 @@ def analytic_theta_2(rp: dict, q: Tensor) -> Tensor:
     Rx = rp["xa"] - rp["l1"] * torch.cos(q[0]) - rp["l2"] * torch.cos(q[1])
     Ry = rp["ya"] - rp["l1"] * torch.sin(q[0]) - rp["l2"] * torch.sin(q[1])    
     
-    h2 = torch.atan2(Ry/Rx)
+    h2 = torch.atan2(Ry,Rx)
     
     return h2
