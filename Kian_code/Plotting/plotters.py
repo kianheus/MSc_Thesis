@@ -16,9 +16,9 @@ def plot_data():
 
 def plot_3d(x, y, z, plot_title, xlabel, ylabel, zlabel):
     # Create a single 3D plot
-    fig = plt.figure(figsize=(8, 5))
+    fig = plt.figure(figsize=(6, 4))
     ax = fig.add_subplot(111, projection='3d')
-    fig.suptitle(plot_title, fontsize=16, y=0.95)  # General title
+    fig.suptitle(plot_title, fontsize=16, y=0.75)  # General title
 
     # Plot the surface
     surf = ax.plot_surface(x, y, z, cmap='viridis', edgecolor='none')
@@ -33,8 +33,8 @@ def plot_3d(x, y, z, plot_title, xlabel, ylabel, zlabel):
     
 def plot_3d_double(x, y, z1, z2, plot_title, title_1, title_2, xlabel, ylabel, zlabel):
      # Create side-by-side plots
-    fig, axes = plt.subplots(1, 2, figsize=(16, 8), subplot_kw={'projection': '3d'})
-    fig.suptitle(plot_title, fontsize=16, y=0.95)  # General title
+    fig, axes = plt.subplots(1, 2, figsize=(12, 4), subplot_kw={'projection': '3d'})
+    fig.suptitle(plot_title, fontsize=16, y=0.75)  # General title
 
     # Left plot: Analytic h2
     axes[0].plot_surface(x, y, z1, cmap='viridis', edgecolor='none')
@@ -71,8 +71,13 @@ def plot_h2(model, device, rp, epoch):
     # Convert tensors to numpy arrays for plotting
     q1_grid_np = q1_grid.numpy()
     q2_grid_np = q2_grid.numpy()
-    h2_analytic_np = h2_analytic.numpy()
+    h2_analytic_np = h2_analytic.numpy() 
     h2_learned_np = h2_learned.detach().numpy()
+
+    # h2 is defined in learning up to a constant, so remove the average to normalize both
+    h2_analytic_norm = h2_analytic_np - h2_analytic_np.mean()
+    h2_learned_norm = h2_learned_np - h2_learned_np.mean()
+    
     
     plot_title = "Comparison of Analytic and Learned $h_2$ at epoch " + str(epoch + 1)
     title_1 = "Analytic $h_2$"
@@ -81,7 +86,8 @@ def plot_h2(model, device, rp, epoch):
     ylabel = "$q_2$ (rad)"
     zlabel = "$h_2$ (rad)"
     
-    plot_3d_double(q1_grid_np, q2_grid_np, h2_analytic_np, h2_learned_np, plot_title, title_1, title_2, xlabel, ylabel, zlabel)
+    plot_3d_double(q1_grid_np, q2_grid_np, h2_analytic_norm, h2_learned_norm, plot_title, 
+                   title_1, title_2, xlabel, ylabel, zlabel)
     
 def plot_J_h(model, device, rp, epoch, plot_index):
     
@@ -112,7 +118,8 @@ def plot_J_h(model, device, rp, epoch, plot_index):
     ylabel = "$q_2$ (rad)"
     zlabel = "$J_h$ (rad)" 
     
-    plot_3d_double(q1_grid_np, q2_grid_np, J_h_1_0_analytic_np, J_h_1_0_learned_np, plot_title, title_1, title_2, xlabel, ylabel, zlabel)
+    plot_3d_double(q1_grid_np, q2_grid_np, J_h_1_0_analytic_np, J_h_1_0_learned_np, 
+                   plot_title, title_1, title_2, xlabel, ylabel, zlabel)
     
 def plot_decoupling(model, device, rp, epoch):
     
@@ -120,11 +127,12 @@ def plot_decoupling(model, device, rp, epoch):
     q1_grid, q2_grid = plot_data()
     q_grid_flat = torch.stack([q1_grid.flatten(), q2_grid.flatten()], dim=-1).to(device)  # Shape: (N, 2)
     
-    J_h_1 = torch.vmap(torch.func.jacfwd(model.encoder_theta_1_ana, has_aux=True))(q_grid_flat)[0]
-    J_h_2 = torch.vmap(torch.func.jacfwd(model.encoder_nn, has_aux=True))(q_grid_flat)[0]
-    
-    J_h = torch.cat((J_h_1, J_h_2), dim=1)
-    J_h_inv = torch.linalg.pinv(J_h).to(device)
+    theta, J_h, q_hat, J_h_ana = model(q_grid_flat)
+
+    try:
+        J_h_inv = torch.linalg.inv(J_h).to(device)
+    except:
+        J_h_inv = torch.linalg.pinv(J_h).to(device)
     J_h_inv_trans = J_h_inv.transpose(1,2).to(device)
     
     matrices_vmap = torch.vmap(dynamics.dynamical_matrices, 
@@ -136,21 +144,61 @@ def plot_decoupling(model, device, rp, epoch):
     
         
     M_th, C_th, G_th = transforms.transform_dynamical_matrices(M_q, C_q, G_q, J_h_inv, J_h_inv_trans)
+
+    try:
+        J_h_inv_ana = torch.linalg.inv(J_h_ana).to(device)
+    except:    
+        J_h_inv_ana = torch.linalg.pinv(J_h_ana).to(device)
+    J_h_inv_trans_ana = J_h_inv_ana.transpose(1,2).to(device)
+    M_th_ana, C_th_ana, G_th_ana = transforms.transform_dynamical_matrices(M_q, C_q, G_q, J_h_inv_ana, J_h_inv_trans_ana)
     
     off_dia = M_th[:, 0, 1]
-    diag_elements = M_th[:, [0, 1], [0, 1]]  # Shape [64, 2]
-    diag_product = torch.sqrt(diag_elements[:, 0] * diag_elements[:, 1] + 1e-6)
-    M_th_ratio = off_dia/diag_product
+    diag_elements = M_th_ana[:, [0, 1], [0, 1]]
+    diag_product = torch.sqrt(diag_elements[:, 0] * diag_elements[:, 1])
+    try:
+        M_th_ratio = off_dia/diag_product
+    except:
+        print("diag_product is zero")
+        diag_product += 1e-8
+        M_th_ratio = off_dia/diag_product
+
+
+    off_dia_ana = M_th_ana[:, 0, 1]
+    diag_elements_ana = M_th_ana[:, [0, 1], [0, 1]] 
+    diag_product_ana = torch.sqrt(diag_elements_ana[:, 0] * diag_elements_ana[:, 1])
+    print(min(diag_product_ana))
+    counter = 0
+    try:
+        M_th_ratio_ana = off_dia_ana/diag_product_ana
+        counter += 1
+    except:
+        print("diag_product_ana is zero")
+        diag_product_ana += 1e-8
+        M_th_ratio_ana = off_dia_ana/diag_product_ana
+    for index, sub_tensor in enumerate(M_th_ana):
+        if M_th_ratio_ana[index] > 0.1:
+            print("M_th_ratio_ana > 0.1:", M_th_ratio_ana[index])
+            print("q:", q_grid_flat[index])
+            print("M_th_ana:\n", sub_tensor)
+            print("J_h_ana:\n", J_h_ana[index])
+            break
     
+    print(counter)
+
     M_th_ratio_grid = M_th_ratio.view(q1_grid.shape)
     M_th_ratio_grid_np = np.abs(M_th_ratio_grid.detach().cpu().numpy())
+    M_th_ratio_ana_grid = M_th_ratio_ana.view(q1_grid.shape)
+    M_th_ratio_ana_grid_np = np.abs(M_th_ratio_ana_grid.detach().cpu().numpy())
     q1_grid_np = q1_grid.numpy()
     q2_grid_np = q2_grid.numpy()
     
     plot_title = "Ratio of off-diagonal to diagonal entries" + str(epoch + 1)
+    title_1 = "Analytic $M_th ratio$"
+    title_2 = "Learned $M_th ratio$"
     xlabel = "$q_1$ (rad)"
     ylabel = "$q_2$ (rad)"
     zlabel = "$Ratio$ (-)"
     
-    plot_3d(q1_grid_np, q2_grid_np, M_th_ratio_grid_np, plot_title, xlabel, ylabel, zlabel)
+    plot_3d_double(q1_grid_np, q2_grid_np, M_th_ratio_ana_grid_np, M_th_ratio_grid_np, 
+                   plot_title, title_1, title_2, xlabel, ylabel, zlabel)
     

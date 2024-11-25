@@ -5,10 +5,13 @@ from typing import Tuple
 
 
 
-def transform_dynamical_matrices(M_q: Tensor, C_q: Tensor, G_q: Tensor, J_h_inv: Tensor, 
-                                J_h_inv_trans: Tensor) -> Tuple[Tensor, Tensor, Tensor]:
+def transform_dynamical_matrices(M_q: Tensor, C_q: Tensor, G_q: Tensor, J_h: Tensor, 
+                                device: torch.device) -> Tuple[Tensor, Tensor, Tensor]:
 
-    
+    # Obtain inverse and transpose inverse Jacobian
+    J_h_inv = torch.linalg.pinv(J_h).to(device)
+    J_h_inv_trans = J_h_inv.transpose(1,2).to(device)
+
     # @ performs batched matrix multiplication on the terms
     M_th = J_h_inv_trans @ M_q @ J_h_inv
     C_th = None
