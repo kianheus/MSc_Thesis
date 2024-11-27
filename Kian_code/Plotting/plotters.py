@@ -188,6 +188,8 @@ def plot_decoupling(model, device, rp, epoch):
 
     M_th_ratio_grid = M_th_ratio.view(q1_grid.shape)
     M_th_ratio_grid_np = np.abs(M_th_ratio_grid.detach().cpu().numpy())
+    M_th_ratio_grid_np[M_th_ratio_grid_np >= 10] = 10
+    
     M_th_ratio_ana_grid = M_th_ratio_ana.view(q1_grid.shape)
     M_th_ratio_ana_grid_np = np.abs(M_th_ratio_ana_grid.detach().cpu().numpy())
     q1_grid_np = q1_grid.numpy()
