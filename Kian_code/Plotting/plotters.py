@@ -31,24 +31,28 @@ def plot_3d(x, y, z, plot_title, xlabel, ylabel, zlabel):
     plt.show()
     
     
-def plot_3d_double(x, y, z1, z2, plot_title, title_1, title_2, xlabel, ylabel, zlabel):
+def plot_3d_double(x, y, z1, z2, plot_title, title_1, title_2, xlabel, ylabel, zlabel, z_limits = None):
      # Create side-by-side plots
     fig, axes = plt.subplots(1, 2, figsize=(12, 4), subplot_kw={'projection': '3d'})
     fig.suptitle(plot_title, fontsize=16, y=0.75)  # General title
 
-    # Left plot: Analytic h2
+    # Left plot: Analytic function
     axes[0].plot_surface(x, y, z1, cmap='viridis', edgecolor='none')
     axes[0].set_xlabel(xlabel)
     axes[0].set_ylabel(ylabel)
     axes[0].set_zlabel(zlabel)
     axes[0].set_title(title_1)
 
-    # Right plot: Learned h2
+    # Right plot: Learned function
     surf = axes[1].plot_surface(x, y, z2, cmap='plasma', edgecolor='none')
     axes[1].set_xlabel(xlabel)
     axes[1].set_ylabel(ylabel)
     axes[1].set_zlabel(zlabel)
     axes[1].set_title(title_2)
+
+    # Apply z-limits if provided
+    if z_limits is not None:
+        axes[1].set_zlim(z_limits)
 
     # Add colorbar for both plots
     fig.colorbar(surf, ax=axes, shrink=0.5, aspect=15, orientation='vertical', label='$h_2$')
@@ -129,10 +133,11 @@ def plot_decoupling(model, device, rp, epoch):
     
     theta, J_h, q_hat, J_h_ana = model(q_grid_flat)
 
+    """
     try:
         J_h_inv = torch.linalg.inv(J_h).to(device)
-    except:
-        J_h_inv = torch.linalg.pinv(J_h).to(device)
+    except:"""
+    J_h_inv = torch.linalg.pinv(J_h).to(device)
     J_h_inv_trans = J_h_inv.transpose(1,2).to(device)
     
     matrices_vmap = torch.vmap(dynamics.dynamical_matrices, 
@@ -143,14 +148,13 @@ def plot_decoupling(model, device, rp, epoch):
     M_q, C_q, G_q = matrices_vmap(rp, q_grid_flat, q_grid_flat)
     
         
-    M_th, C_th, G_th = transforms.transform_dynamical_matrices(M_q, C_q, G_q, J_h_inv, J_h_inv_trans)
+    M_th, C_th, G_th = transforms.transform_dynamical_matrices(M_q, C_q, G_q, J_h, device)
+    M_th_ana, C_th_ana, G_th_ana = transforms.transform_dynamical_matrices(M_q, C_q, G_q, J_h_ana, device)
 
-    try:
-        J_h_inv_ana = torch.linalg.inv(J_h_ana).to(device)
-    except:    
-        J_h_inv_ana = torch.linalg.pinv(J_h_ana).to(device)
-    J_h_inv_trans_ana = J_h_inv_ana.transpose(1,2).to(device)
-    M_th_ana, C_th_ana, G_th_ana = transforms.transform_dynamical_matrices(M_q, C_q, G_q, J_h_inv_ana, J_h_inv_trans_ana)
+
+    matrices_th_ana_vmap = torch.vmap(dynamics.dynamical_matrices_th, 
+                                   in_dims=(None, 0, 0))
+    M_th_ana, C_th_ana, G_th_ana = matrices_th_ana_vmap(rp, q_grid_flat, q_grid_flat)
     
     off_dia = M_th[:, 0, 1]
     diag_elements = M_th_ana[:, [0, 1], [0, 1]]
@@ -166,11 +170,9 @@ def plot_decoupling(model, device, rp, epoch):
     off_dia_ana = M_th_ana[:, 0, 1]
     diag_elements_ana = M_th_ana[:, [0, 1], [0, 1]] 
     diag_product_ana = torch.sqrt(diag_elements_ana[:, 0] * diag_elements_ana[:, 1])
-    print(min(diag_product_ana))
-    counter = 0
+
     try:
         M_th_ratio_ana = off_dia_ana/diag_product_ana
-        counter += 1
     except:
         print("diag_product_ana is zero")
         diag_product_ana += 1e-8
@@ -182,8 +184,7 @@ def plot_decoupling(model, device, rp, epoch):
             print("M_th_ana:\n", sub_tensor)
             print("J_h_ana:\n", J_h_ana[index])
             break
-    
-    print(counter)
+
 
     M_th_ratio_grid = M_th_ratio.view(q1_grid.shape)
     M_th_ratio_grid_np = np.abs(M_th_ratio_grid.detach().cpu().numpy())
@@ -198,7 +199,8 @@ def plot_decoupling(model, device, rp, epoch):
     xlabel = "$q_1$ (rad)"
     ylabel = "$q_2$ (rad)"
     zlabel = "$Ratio$ (-)"
+    z_limits = (-1, 1)
     
     plot_3d_double(q1_grid_np, q2_grid_np, M_th_ratio_ana_grid_np, M_th_ratio_grid_np, 
-                   plot_title, title_1, title_2, xlabel, ylabel, zlabel)
+                   plot_title, title_1, title_2, xlabel, ylabel, zlabel, z_limits)
     
