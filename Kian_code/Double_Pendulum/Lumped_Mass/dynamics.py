@@ -70,7 +70,7 @@ def dynamical_matrices(rp: dict, q: Tensor, q_d: Tensor) -> Tuple[Tensor, Tensor
 
 def dynamical_matrices_th(rp: dict, q: Tensor, q_d: Tensor) -> Tuple[Tensor, Tensor, Tensor]:
     """
-    Computes the dynamical matrices in the equation (analytically)
+    Computes the dynamical matrices (analytically) in the equation
     M_th @ th_dd + C_th @ th_d + G_th = tau_q
 
     Args:
@@ -98,3 +98,26 @@ def dynamical_matrices_th(rp: dict, q: Tensor, q_d: Tensor) -> Tuple[Tensor, Ten
     G_th = torch.tensor([float("nan")])
 
     return M_th, C_th, G_th 
+
+def input_matrix(rp: dict, q: Tensor) -> Tensor:
+
+    """
+    Computes the input matrix A (analytically) in the equation 
+    M_q @ q_dd + C_q @ q_d + G_q = A_q @ u
+    """
+
+    """
+    USE WOLFRAM MATHEMATICA TO DEFINE
+    """
+
+
+    
+    Rx = rp["xa"] - rp["l1"] * torch.cos(q[0]) - rp["l2"] * torch.cos(q[1])
+    Ry = rp["ya"] - rp["l1"] * torch.sin(q[0]) - rp["l2"] * torch.sin(q[1])
+
+    A_q1 = (rp["l1"] * torch.sin(q[0]) * Rx - rp["l1"] * torch.sin(q[0]) * Ry) / torch.sqrt(Rx**2 + Ry**2).unsqueeze(0).unsqueeze(0)
+    A_q2 = (rp["l2"] * torch.sin(q[1]) * Rx - rp["l2"] * torch.sin(q[1]) * Ry) / torch.sqrt(Rx**2 + Ry**2).unsqueeze(0).unsqueeze(0)
+
+    A_q = torch.cat((A_q1, A_q2), dim = 0)
+
+    return A_q
