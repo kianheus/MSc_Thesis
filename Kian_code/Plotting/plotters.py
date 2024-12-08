@@ -7,8 +7,8 @@ from matplotlib import pyplot as plt
 
 
 def plot_data():
-    q1_plot = torch.linspace(-np.pi / 2, np.pi / 2, 50)
-    q2_plot = torch.linspace(-np.pi / 2, np.pi / 2, 50)
+    q1_plot = torch.linspace(-np.pi/2, np.pi/2, 50)
+    q2_plot = torch.linspace(-np.pi/2, np.pi/2, 50)
     q1_grid, q2_grid = torch.meshgrid(q1_plot, q2_plot, indexing='ij')
     
     return q1_grid, q2_grid
@@ -34,7 +34,7 @@ def plot_3d(x, y, z, plot_title, xlabel, ylabel, zlabel):
 def plot_3d_double(x, y, z1, z2, plot_title, title_1, title_2, xlabel, ylabel, zlabel, z_limits = None):
      # Create side-by-side plots
     fig, axes = plt.subplots(1, 2, figsize=(12, 4), subplot_kw={'projection': '3d'})
-    fig.suptitle(plot_title, fontsize=16, y=0.75)  # General title
+    #fig.suptitle(plot_title, fontsize=16, y=0.75)  # General title
 
     # Left plot: Analytic function
     axes[0].plot_surface(x, y, z1, cmap='viridis', edgecolor='none')
@@ -43,16 +43,16 @@ def plot_3d_double(x, y, z1, z2, plot_title, title_1, title_2, xlabel, ylabel, z
     axes[0].set_zlabel(zlabel)
     axes[0].set_title(title_1)
 
+    # Apply z-limits if provided
+    if z_limits is not None:
+        axes[0].set_zlim(z_limits)
+
     # Right plot: Learned function
     surf = axes[1].plot_surface(x, y, z2, cmap='plasma', edgecolor='none')
     axes[1].set_xlabel(xlabel)
     axes[1].set_ylabel(ylabel)
     axes[1].set_zlabel(zlabel)
     axes[1].set_title(title_2)
-
-    # Apply z-limits if provided
-    if z_limits is not None:
-        axes[1].set_zlim(z_limits)
 
     # Add colorbar for both plots
     fig.colorbar(surf, ax=axes, shrink=0.5, aspect=15, orientation='vertical', label='$h_2$')
@@ -188,7 +188,8 @@ def plot_decoupling(model, device, rp, epoch):
 
     M_th_ratio_grid = M_th_ratio.view(q1_grid.shape)
     M_th_ratio_grid_np = np.abs(M_th_ratio_grid.detach().cpu().numpy())
-    M_th_ratio_grid_np[M_th_ratio_grid_np >= 10] = 10
+    M_th_ratio_grid_np_capped = np.copy(M_th_ratio_grid_np)
+    M_th_ratio_grid_np_capped[M_th_ratio_grid_np_capped >= 5] = 5
     
     M_th_ratio_ana_grid = M_th_ratio_ana.view(q1_grid.shape)
     M_th_ratio_ana_grid_np = np.abs(M_th_ratio_ana_grid.detach().cpu().numpy())
@@ -196,13 +197,91 @@ def plot_decoupling(model, device, rp, epoch):
     q2_grid_np = q2_grid.numpy()
     
     plot_title = "Ratio of off-diagonal to diagonal entries" + str(epoch + 1)
-    title_1 = "Analytic $M_th ratio$"
-    title_2 = "Learned $M_th ratio$"
+    title_1 = r"Learned $M_{theta}$ ratio (capped)"
+    title_2 = r"Learned $M_{theta}$ ratio (full)"
     xlabel = "$q_1$ (rad)"
     ylabel = "$q_2$ (rad)"
     zlabel = "$Ratio$ (-)"
-    z_limits = (-1, 1)
+    z_limits = (0, 5)
     
-    plot_3d_double(q1_grid_np, q2_grid_np, M_th_ratio_ana_grid_np, M_th_ratio_grid_np, 
+    plot_3d_double(q1_grid_np, q2_grid_np, M_th_ratio_grid_np_capped, M_th_ratio_grid_np, 
+                   plot_title, title_1, title_2, xlabel, ylabel, zlabel, z_limits)
+    
+
+def plot_decoupling_inv(model, device, rp, epoch):
+    
+    #Obtain [q1,q1]-grid and flatten
+    q1_grid, q2_grid = plot_data()
+    q_grid_flat = torch.stack([q1_grid.flatten(), q2_grid.flatten()], dim=-1).to(device)  # Shape: (N, 2)
+    
+    J_h_inv, q_hat = model(q_grid_flat)
+
+    J_h_inv_trans = J_h_inv.transpose(1,2).to(device)
+    
+    matrices_vmap = torch.vmap(dynamics.dynamical_matrices, 
+                                   in_dims=(None, 0, 0))
+
+    
+    # Inputting q as q_d. This is not pretty but it doesn't matter since we only care about M_q
+    M_q, C_q, G_q = matrices_vmap(rp, q_grid_flat, q_grid_flat)
+    
+        
+    M_th, C_th, G_th = transforms.transform_dynamical_from_inverse(M_q, C_q, G_q, J_h_inv, J_h_inv_trans)
+    #M_th_ana, C_th_ana, G_th_ana = transforms.transform_dynamical_matrices(M_q, C_q, G_q, J_h_ana, device)
+
+
+    matrices_th_ana_vmap = torch.vmap(dynamics.dynamical_matrices_th, 
+                                   in_dims=(None, 0, 0))
+    M_th_ana, C_th_ana, G_th_ana = matrices_th_ana_vmap(rp, q_grid_flat, q_grid_flat)
+    
+    off_dia = M_th[:, 0, 1]
+    diag_elements = M_th_ana[:, [0, 1], [0, 1]]
+    diag_product = torch.sqrt(diag_elements[:, 0] * diag_elements[:, 1])
+    try:
+        M_th_ratio = off_dia/diag_product
+    except:
+        print("diag_product is zero")
+        diag_product += 1e-8
+        M_th_ratio = off_dia/diag_product
+
+
+    off_dia_ana = M_th_ana[:, 0, 1]
+    diag_elements_ana = M_th_ana[:, [0, 1], [0, 1]] 
+    diag_product_ana = torch.sqrt(diag_elements_ana[:, 0] * diag_elements_ana[:, 1])
+
+    try:
+        M_th_ratio_ana = off_dia_ana/diag_product_ana
+    except:
+        print("diag_product_ana is zero")
+        diag_product_ana += 1e-8
+        M_th_ratio_ana = off_dia_ana/diag_product_ana
+    for index, sub_tensor in enumerate(M_th_ana):
+        if M_th_ratio_ana[index] > 0.1:
+            print("M_th_ratio_ana > 0.1:", M_th_ratio_ana[index])
+            print("q:", q_grid_flat[index])
+            print("M_th_ana:\n", sub_tensor)
+            print("J_h_ana:\n", J_h_ana[index])
+            break
+
+
+    M_th_ratio_grid = M_th_ratio.view(q1_grid.shape)
+    M_th_ratio_grid_np = np.abs(M_th_ratio_grid.detach().cpu().numpy())
+    M_th_ratio_grid_np_capped = np.copy(M_th_ratio_grid_np)
+    M_th_ratio_grid_np_capped[M_th_ratio_grid_np_capped >= 5] = 5
+    
+    M_th_ratio_ana_grid = M_th_ratio_ana.view(q1_grid.shape)
+    M_th_ratio_ana_grid_np = np.abs(M_th_ratio_ana_grid.detach().cpu().numpy())
+    q1_grid_np = q1_grid.numpy()
+    q2_grid_np = q2_grid.numpy()
+    
+    plot_title = "Ratio of off-diagonal to diagonal entries" + str(epoch + 1)
+    title_1 = r"Learned $M_{theta}$ ratio (capped)"
+    title_2 = r"Learned $M_{theta}$ ratio (full)"
+    xlabel = "$q_1$ (rad)"
+    ylabel = "$q_2$ (rad)"
+    zlabel = "$Ratio$ (-)"
+    z_limits = (0, 5)
+    
+    plot_3d_double(q1_grid_np, q2_grid_np, M_th_ratio_grid_np_capped, M_th_ratio_grid_np, 
                    plot_title, title_1, title_2, xlabel, ylabel, zlabel, z_limits)
     

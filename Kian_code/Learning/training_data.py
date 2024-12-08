@@ -4,10 +4,10 @@ import torch
 n_samples = 1000
 
 # Data range
-q1_low  = torch.pi/4
-q1_high = torch.pi
-q2_low  = -torch.pi/2
-q2_high = torch.pi/2
+q1_low  = -torch.pi/4
+q1_high = torch.pi/4
+q2_low  = -torch.pi/4
+q2_high = torch.pi/4
 q1_d_low  = -torch.pi
 q1_d_high = torch.pi
 q2_d_low  = -torch.pi
