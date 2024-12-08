@@ -4,7 +4,7 @@ from torch import Tensor
 import Double_Pendulum.Lumped_Mass.dynamics as dynamics
 
 criterion = nn.MSELoss()
-
+#criterion = nn.L1Loss()
 
 
 
@@ -19,16 +19,12 @@ def loss_diagonality_geo_mean(M_th: Tensor, batch_size: int, device: torch.devic
     # Extract off-diagonal and diagonal elements
     off_dia = M_th[:, 0, 1]
     dia = M_th[:, [0, 1], [0, 1]]  # Shape [64, 2]
-    # Compute the geometric mean of diagonal elements
-    geo_mean = torch.sqrt(dia[:, 0] * dia[:, 1])
+    # Compute the geometric mean of diagonal elements and 
+    # add small factor to prevent division by 0
+    geo_mean = torch.sqrt(dia[:, 0] * dia[:, 1] + 1e-10) 
 
-
-    # Try-except block in case components along diagonal are 0
-    try:
-        M_th_ratio = off_dia/geo_mean
-    except:
-        print("M_th_ratio broken")
-        M_th_ratio = off_dia/(geo_mean + 1e-6)
+    # Calculate ratio
+    M_th_ratio = off_dia/geo_mean
 
     loss_diagonality_geo_mean = criterion(M_th_ratio, torch.zeros((batch_size)).to(device))
 
@@ -51,16 +47,16 @@ def loss_diagonality_trace(M_th: Tensor, batch_size: int, device: torch.device) 
     return(loss_diagonality_geo_mean)
 
 
-def loss_diagonality_lowest(M_th: Tensor, batch_size: int, device: torch.device) -> Tensor: 
+def loss_diagonality_smallest(M_th: Tensor, batch_size: int, device: torch.device) -> Tensor: 
     
     """
     Uses the lowest value of the diagonal entries of M_th as the denominator.
     """
 
-    # Extract off-diagonal elements and lowest diagonal element of M_th
-    off_dia = M_th[:, 0, 1]
-    lowest = torch.min(M_th[:, 0, 0], M_th[:, 1, 1])
-    M_th_ratio = off_dia/lowest
+    # Extract off-diagonal elements and smallest diagonal element of M_th
+    off_dia = M_th[:, 0, 1] + 1e-3
+    smallest = torch.min(M_th[:, 0, 0], M_th[:, 1, 1]) + 1e-12
+    M_th_ratio = off_dia/smallest
 
     loss_diagonality_geo_mean = criterion(M_th_ratio, torch.zeros((batch_size)).to(device))
 
@@ -73,6 +69,15 @@ def loss_J_h_unitary(J_h: Tensor, batch_size:int, device: torch.device) -> Tenso
     "stretching" in the latent space.
     """
 
+    J_h_trans = J_h.transpose(-2,-1)
+
+    dot_product = torch.bmm(J_h_trans, J_h)
+
+    big_identity = torch.eye(2).expand(batch_size, -1, -1).to(device)
+
+    loss_J_h_unitary = criterion(dot_product, big_identity)
+    
+    """
     # Obtain unactuated part of J_h and its transpose
     J_h_u = J_h[:, 1, :].unsqueeze(1)
     J_h_u_trans = J_h_u.transpose(-2,-1)
@@ -82,6 +87,7 @@ def loss_J_h_unitary(J_h: Tensor, batch_size:int, device: torch.device) -> Tenso
 
     # Dot product should equal 1 for unitary vector
     loss_J_h_unitary = criterion(dot_product, torch.ones((batch_size)).to(device))
+    """
 
     return loss_J_h_unitary
 
@@ -133,3 +139,37 @@ def loss_M_th_cheat(M_th: Tensor, rp: dict, q: Tensor, q_d: Tensor, batch_size: 
     loss_M_th_cheat = criterion(M_th, M_th_ana)
 
     return loss_M_th_cheat
+
+def loss_input_decoupling(A_th: Tensor, batch_size: int, device: torch.device, epoch) -> Tensor:
+
+    """
+    Calculates the error between the A-matrix in theta coordinates and the desired A-matrix ([1, 0]^T)
+    """
+
+    A_desired = torch.tensor([[1.], [0.]]).unsqueeze(0).repeat(batch_size, 1, 1).to(device)
+
+    loss_A1 = torch.mean(torch.exp(-3*A_th[:, 0]+0.5))
+    loss_A2 = criterion(A_th[:, 1], A_desired[:, 1])
+
+    if epoch > 800:
+        print(loss_A1)
+        print(loss_A2)
+
+    loss_input_decoupling = loss_A1 + loss_A2
+
+    return loss_input_decoupling
+
+
+def loss_h1_shaping(J_h: Tensor, A_q: Tensor, device: torch.device) -> Tensor:
+
+    """
+    Calculates the error between the Jacobian of h1 and the desired Jacobian of h1 for input decoupling.
+    The desired Jacobian of h1 is the input matrix A, following from Pietro Pustina's paper.
+    https://arxiv.org/pdf/2306.07258
+    """
+
+    J_h1 = J_h[:,0].unsqueeze(2)
+
+    loss_h1_shaping = criterion(J_h1, A_q)
+
+    return loss_h1_shaping
