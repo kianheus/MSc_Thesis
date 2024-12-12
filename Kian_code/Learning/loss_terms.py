@@ -76,8 +76,10 @@ def loss_J_h_unitary(J_h: Tensor, batch_size:int, device: torch.device) -> Tenso
     big_identity = torch.eye(2).expand(batch_size, -1, -1).to(device)
 
     loss_J_h_unitary = criterion(dot_product, big_identity)
-    
-    """
+
+    return loss_J_h_unitary
+
+def loss_J_h_u_unitary(J_h: Tensor, batch_size:int, device: torch.device) -> Tensor:
     # Obtain unactuated part of J_h and its transpose
     J_h_u = J_h[:, 1, :].unsqueeze(1)
     J_h_u_trans = J_h_u.transpose(-2,-1)
@@ -86,10 +88,9 @@ def loss_J_h_unitary(J_h: Tensor, batch_size:int, device: torch.device) -> Tenso
     dot_product = torch.bmm(J_h_u, J_h_u_trans).squeeze()
 
     # Dot product should equal 1 for unitary vector
-    loss_J_h_unitary = criterion(dot_product, torch.ones((batch_size)).to(device))
-    """
+    loss_J_h_u_unitary = criterion(dot_product, torch.ones((batch_size)).to(device))
+    return loss_J_h_u_unitary
 
-    return loss_J_h_unitary
 
 def loss_J_h_cheat(J_h: Tensor, J_h_ana: Tensor):
 
@@ -150,10 +151,6 @@ def loss_input_decoupling(A_th: Tensor, batch_size: int, device: torch.device, e
 
     loss_A1 = torch.mean(torch.exp(-3*A_th[:, 0]+0.5))
     loss_A2 = criterion(A_th[:, 1], A_desired[:, 1])
-
-    if epoch > 800:
-        print(loss_A1)
-        print(loss_A2)
 
     loss_input_decoupling = loss_A1 + loss_A2
 
