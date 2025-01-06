@@ -14,7 +14,7 @@ def transform_M(M_q: Tensor, J_h: Tensor, device: torch.device) -> Tensor:
     
     return M_th
 
-def transform_dynamical_from_inverse(M_q: Tensor, J_h_inv: Tensor, 
+def transform_M_from_inverse(M_q: Tensor, J_h_inv: Tensor, 
                                 J_h_inv_trans: Tensor) -> Tensor:
 
     # @ performs batched matrix multiplication on the terms
@@ -53,6 +53,12 @@ def transform_input_matrix(A_q: Tensor, J_h: Tensor, device: torch.device) -> Te
 
     # Obtain inverse Jacobian and calculate A_th
     J_h_inv = J_h.transpose(1,2).to(device)
+    A_th = J_h_inv @ A_q
+
+    return A_th
+
+def transform_input_matrix_from_inverse(A_q: Tensor, J_h_inv: Tensor, device: torch.device) -> Tensor:
+
     A_th = J_h_inv @ A_q
 
     return A_th
