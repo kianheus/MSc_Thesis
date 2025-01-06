@@ -7,12 +7,12 @@ from matplotlib import pyplot as plt
 import Learning.training_data as training_data
 
 
-def plot_data():
+def plot_data(device):
     q1_plot = torch.linspace(training_data.q1_low, training_data.q1_high, 50)
     q2_plot = torch.linspace(training_data.q2_low, training_data.q2_high, 50)
     q1_grid, q2_grid = torch.meshgrid(q1_plot, q2_plot, indexing='ij')
-    
-    return q1_grid, q2_grid
+    plot_points = torch.stack([q1_grid.flatten(), q2_grid.flatten()], dim=-1).to(device)  # Shape: (N, 2)
+    return plot_points
 
 
 def plot_3d(x, y, z, plot_title, xlabel, ylabel, zlabel):
@@ -108,7 +108,12 @@ def plot_J_h(model, device, rp, epoch, plot_index):
     
     # Use vmap to vectorize over the grid
     J_h_1_0_analytic_flat = torch.vmap(torch.func.jacfwd(model.encoder_theta_2_ana, has_aux=True))(q_grid_flat)[0][:,:,plot_index]
-    J_h_1_0_learned_flat = torch.vmap(torch.func.jacfwd(model.encoder_nn, has_aux=True))(q_grid_flat)[0][:,:,plot_index]
+    J_h_1_0_learned_flat = torch.vmap(torch.func.jacfwd(model.encoder_nn, has_aux=True))(q_grid_flat)[0][:,1,plot_index]
+
+    print(torch.vmap(torch.func.jacfwd(model.encoder_nn, has_aux=True))(q_grid_flat)[0][0,:,:])
+    print(torch.vmap(torch.func.jacfwd(model.encoder_nn, has_aux=True))(q_grid_flat)[0][0,1,plot_index])
+
+    print(J_h_1_0_learned_flat.size())
 
     # Reshape results back to the grid shape
     J_h_1_0_analytic = J_h_1_0_analytic_flat.view(q1_grid.shape)
@@ -161,7 +166,7 @@ def plot_decoupling(model, device, rp, epoch):
     M_th_ana, C_th_ana, G_th_ana = matrices_th_ana_vmap(rp, q_grid_flat, q_grid_flat)
     
     off_dia = M_th[:, 0, 1]
-    diag_elements = M_th_ana[:, [0, 1], [0, 1]]
+    diag_elements = M_th[:, [0, 1], [0, 1]]
     diag_product = torch.sqrt(diag_elements[:, 0] * diag_elements[:, 1])
     try:
         M_th_ratio = off_dia/diag_product
@@ -319,7 +324,7 @@ def plot_decoupling(model, device, rp, epoch):
     M_th_ana, C_th_ana, G_th_ana = matrices_th_ana_vmap(rp, q_grid_flat, q_grid_flat)
     
     off_dia = M_th[:, 0, 1]
-    diag_elements = M_th_ana[:, [0, 1], [0, 1]]
+    diag_elements = M_th[:, [0, 1], [0, 1]]
     diag_product = torch.sqrt(diag_elements[:, 0] * diag_elements[:, 1])
     try:
         M_th_ratio = off_dia/diag_product
