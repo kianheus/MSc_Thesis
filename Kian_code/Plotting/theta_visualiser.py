@@ -9,80 +9,111 @@ import torch
 from matplotlib.animation import FuncAnimation, ArtistAnimation
 
 
-def test_theta_1(rp: dict, q: Tensor) -> Tensor:
-    
-    h1 = q[0]*q[0]
-    
-    return h1
-    
-    
-def test_theta_2(rp: dict, q: Tensor) -> Tensor:
-    
-    h2 = q[1]
-    
-    return h2
-
-def plotter(rp):
-    # Generate the curved lines to simulate a coordinate transformation effect
-    n_lines = 51
-    frames = 37  # Number of frames for the animation
-    q1 = torch.linspace(training_data.q1_low, training_data.q1_high, n_lines)
-    q2 = torch.linspace(training_data.q2_low, training_data.q2_high, n_lines)
-
-    # Create the meshgrid for the grid of points
-    q1_grid, q2_grid = torch.meshgrid(q1, q2, indexing="ij")  # Shape: (101, 101)
-
-    # Flatten for easier computation with vmap
-    q_combined = torch.stack((q1_grid.flatten(), q2_grid.flatten()), dim=-1)  # Shape: (n_lines * n_lines, 2)
-
-    Theta1 = torch.vmap(transforms.analytic_theta_1, in_dims=(None, 0))(rp, q_combined)
-    Theta2 = torch.vmap(transforms.analytic_theta_2, in_dims=(None, 0))(rp, q_combined)
-
-    Theta1 = Theta1.view(n_lines, n_lines)
-    Theta2 = Theta2.view(n_lines, n_lines)
-
-    # Recreate the figure with corrected settings
-    fig, ax = plt.subplots()
-
-    output_path = "Plotting/Plots/morphing_animation.mp4"
-
-    # Store frames for ArtistAnimation
-    frames_artists = []
-
-    for frame in range(frames):
-        t = frame / (frames - 1)  # Normalized time from 0 to 1
-        plot_Theta1 = (1 - t) * q1_grid + t * Theta1
-        plot_Theta2 = (1 - t) * q2_grid + t * Theta2
-
-        artists = []  # Collect artists for this frame
-        for i in range(Theta1.shape[1]):
-            h_line, = ax.plot(plot_Theta1[i, :], plot_Theta2[i, :], color='black', lw=0.2, alpha=0.9)
-            v_line, = ax.plot(plot_Theta1[:, i], plot_Theta2[:, i], color='black', lw=0.2, alpha=0.9)
-            artists.extend([h_line, v_line])
-
-        frames_artists.append(artists)
-
-    # Create the animation
-    ani = ArtistAnimation(fig, frames_artists, interval=20, blit=True)
-
-    # Save the animation as MP4
-    ani.save(output_path, writer="ffmpeg")#, dpi=400, bitrate=1800)
-    plt.close(fig)
 
 
-    """
-    # Define a dark blue/purple background color
-    colors = [(0/255, 10/255, 80/255), (60/255, 0, 65/255)]  # Dark blue to purple
-    background_cmap = LinearSegmentedColormap.from_list("custom_gradient", colors)
 
-    # Generate a gradient background
-    bg_x = np.linspace(0, 1, 400)
-    bg_y = np.linspace(0, 1, 300)
-    bg_X, bg_Y = np.meshgrid(bg_x, bg_y)
-    bg_Z = np.sin(bg_X * np.pi) * np.cos(bg_Y * np.pi)
+class theta_plotter:
 
-    # Create the background as an image
-    ax.imshow(bg_Z, cmap=background_cmap, origin='lower', extent=[training_data.q1_low, training_data.q1_high, 
-                                                                training_data.q2_low, training_data.q2_high], 
-                                                                alpha=0.95)
-    """
+    def __init__(self, rp, n_lines):
+
+        # Create n lines of points across q1 and q2 across the training range for visualization
+        q1 = torch.linspace(training_data.q1_low, training_data.q1_high, n_lines)
+        q2 = torch.linspace(training_data.q2_low, training_data.q2_high, n_lines)
+
+        # Turn these lines into meshgrids
+        self.q1_grid, self.q2_grid = torch.meshgrid(q1, q2, indexing="ij")
+
+        # Flatten for easier computation with vmap
+        q_combined = torch.stack((self.q1_grid.flatten(), self.q2_grid.flatten()), dim=-1)
+
+        # Calculate coordinate change
+        Theta1 = torch.vmap(transforms.analytic_theta_1, in_dims=(None, 0))(rp, q_combined)
+        Theta2 = torch.vmap(transforms.analytic_theta_2, in_dims=(None, 0))(rp, q_combined)
+
+        self.Theta1 = Theta1.view(n_lines, n_lines)
+        self.Theta2 = Theta2.view(n_lines, n_lines)
+
+    def make_animation(self, file_name, duration, fps, stride):
+        
+        """
+        Takes file_name (including filetype) and generates an animation which shows how
+        orthogonal lines move under the coordinate change from q to theta.         
+        """
+
+        interval = int(1000/fps)
+        frames = int(1000*duration/interval)
+        output_path = "Plotting/Plots/" + file_name
+
+        # Create the figure with corrected settings
+        fig, ax = plt.subplots(figsize=(10, 10), dpi=400)
+
+        # Store frames for ArtistAnimation
+        frames_artists = []
+
+        q1_grid_thin = self.q1_grid[::stride, ::stride] 
+        q2_grid_thin = self.q2_grid[::stride, ::stride] 
+        Theta1_thin = self.Theta1[::stride, ::stride]
+        Theta2_thin = self.Theta2[::stride, ::stride]
+
+        # Loop over all frames and morph from original coordinates q to new coordinates theta
+        # Append artists of each frame to be animated later
+        for frame in range(frames):
+            t = frame / (frames - 1)  # Normalized time from 0 to 1
+            plot_Theta1 = (1 - t) * q1_grid_thin + t * Theta1_thin
+            plot_Theta2 = (1 - t) * q2_grid_thin + t * Theta2_thin
+
+            artists = []  # Collect artists for this frame
+            for i in range(Theta1_thin.shape[1]):
+                h_line, = ax.plot(plot_Theta1[i, :], plot_Theta2[i, :], color='black', lw=0.3)
+                v_line, = ax.plot(plot_Theta1[:, i], plot_Theta2[:, i], color='black', lw=0.3)
+                artists.extend([h_line, v_line])
+
+            frames_artists.append(artists)
+
+        # Duplicate the final frame another second to improve viewability
+        final_artists = frames_artists[-1]
+        for _ in range(fps):
+            frames_artists.append(final_artists)    
+
+        # Create the animation
+        ani = ArtistAnimation(fig, frames_artists, interval=interval, blit=True)
+
+        # Save the animation as MP4
+        ani.save(output_path, writer="ffmpeg", dpi=400, bitrate=-1)
+        plt.close(fig)
+
+    def make_figure(self, file_name):
+
+        # Set the output path
+        output_path = "Plotting/Plots/" + file_name
+
+        # Create the figure with corrected settings
+        fig, ax = plt.subplots(figsize=(10, 10), dpi=400)
+
+        # Plot the transformed grid lines
+        for i in range(self.Theta1.shape[1]):  # Draw fewer lines for clarity
+            ax.plot(self.Theta1[i, :], self.Theta2[i, :], color='black', lw=0.3, alpha=0.9)
+            ax.plot(self.Theta1[:, i], self.Theta2[:, i], color='black', lw=0.3, alpha=0.9)
+
+        # Save the figure
+        plt.savefig(output_path, dpi=400, bbox_inches='tight', pad_inches=0)
+        plt.close(fig)
+
+
+
+"""
+# Define a dark blue/purple background color
+colors = [(0/255, 10/255, 80/255), (60/255, 0, 65/255)]  # Dark blue to purple
+background_cmap = LinearSegmentedColormap.from_list("custom_gradient", colors)
+
+# Generate a gradient background
+bg_x = np.linspace(0, 1, 400)
+bg_y = np.linspace(0, 1, 300)
+bg_X, bg_Y = np.meshgrid(bg_x, bg_y)
+bg_Z = np.sin(bg_X * np.pi) * np.cos(bg_Y * np.pi)
+
+# Create the background as an image
+ax.imshow(bg_Z, cmap=background_cmap, origin='lower', extent=[training_data.q1_low, training_data.q1_high, 
+                                                            training_data.q2_low, training_data.q2_high], 
+                                                            alpha=0.95)
+"""
