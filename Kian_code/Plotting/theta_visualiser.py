@@ -91,10 +91,16 @@ class theta_plotter:
 
             frames_artists.append(artists)
 
-        # Duplicate the final frame another second to improve viewability
+        # Duplicate the first and final frame another second to improve viewability
+        first_artists = frames_artists[0]
         final_artists = frames_artists[-1]
         for _ in range(fps):
-            frames_artists.append(final_artists)    
+            frames_artists.insert(0, first_artists)
+            frames_artists.append(final_artists)
+
+            
+
+        frames_artists.extend(reversed(frames_artists[:-fps])) 
 
         # Create the animation
         ani = ArtistAnimation(fig, frames_artists, interval=interval, blit=True)
