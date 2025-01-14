@@ -10,11 +10,29 @@ from matplotlib.animation import FuncAnimation, ArtistAnimation
 
 
 
+def x_func(rp: dict, q: Tensor) -> Tensor:
+    
+    # x position of the end effector
+    
+    x = rp["l1"] * torch.cos(q[0]) + rp["l2"] * torch.cos(q[1])
+    
+    return x
+    
+    
+def y_func(rp: dict, q: Tensor) -> Tensor:
+    
+    # y position of the end effector
+    
+    y = rp["l1"] * torch.sin(q[0]) + rp["l2"] * torch.sin(q[1])
+    
+    return y
+
+
 
 
 class theta_plotter:
 
-    def __init__(self, rp, n_lines):
+    def __init__(self, rp, n_lines, mapping_functions = (x_func, y_func)):
 
         # Create n lines of points across q1 and q2 across the training range for visualization
         q1 = torch.linspace(training_data.q1_low, training_data.q1_high, n_lines)
@@ -27,8 +45,8 @@ class theta_plotter:
         q_combined = torch.stack((self.q1_grid.flatten(), self.q2_grid.flatten()), dim=-1)
 
         # Calculate coordinate change
-        Theta1 = torch.vmap(transforms.analytic_theta_1, in_dims=(None, 0))(rp, q_combined)
-        Theta2 = torch.vmap(transforms.analytic_theta_2, in_dims=(None, 0))(rp, q_combined)
+        Theta1 = torch.vmap(mapping_functions[0], in_dims=(None, 0))(rp, q_combined)
+        Theta2 = torch.vmap(mapping_functions[1], in_dims=(None, 0))(rp, q_combined)
 
         self.Theta1 = Theta1.view(n_lines, n_lines)
         self.Theta2 = Theta2.view(n_lines, n_lines)
