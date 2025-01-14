@@ -76,9 +76,12 @@ class theta_plotter:
         # Loop over all frames and morph from original coordinates q to new coordinates theta
         # Append artists of each frame to be animated later
         for frame in range(frames):
-            t = frame / (frames - 1)  # Normalized time from 0 to 1
-            plot_Theta1 = (1 - t) * q1_grid_thin + t * Theta1_thin
-            plot_Theta2 = (1 - t) * q2_grid_thin + t * Theta2_thin
+            t = torch.tensor(frame / (frames - 1))  # Normalized time from 0 to 1
+            plot_func = (torch.sin((2*t-1)*torch.pi/2)+1)/2
+            plot_Theta1 = (1 - plot_func) * q1_grid_thin + plot_func * Theta1_thin
+            plot_Theta2 = (1 - plot_func) * q2_grid_thin + plot_func * Theta2_thin
+        
+
 
             artists = []  # Collect artists for this frame
             for i in range(Theta1_thin.shape[1]):
