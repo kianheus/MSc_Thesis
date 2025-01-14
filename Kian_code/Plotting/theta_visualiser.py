@@ -41,6 +41,13 @@ class theta_plotter:
         # Turn these lines into meshgrids
         self.q1_grid, self.q2_grid = torch.meshgrid(q1, q2, indexing="ij")
 
+        # Apply the slicing condition: keep points where q2 is in [q1, q1 + π]
+        #self.valid_mask = (self.q2_grid >= self.q1_grid) & (self.q2_grid <= self.q1_grid + torch.pi)
+        
+        self.valid_mask = ((self.q2_grid >= self.q1_grid) & (self.q2_grid <= self.q1_grid + torch.pi))
+        self.valid_mask2 = ((self.q2_grid >= self.q1_grid - 2 * torch.pi) & (self.q2_grid <= self.q1_grid - torch.pi))
+
+
         # Flatten for easier computation with vmap
         q_combined = torch.stack((self.q1_grid.flatten(), self.q2_grid.flatten()), dim=-1)
 
@@ -85,9 +92,15 @@ class theta_plotter:
 
             artists = []  # Collect artists for this frame
             for i in range(Theta1_thin.shape[1]):
-                h_line, = ax.plot(plot_Theta1[i, :], plot_Theta2[i, :], color='black', lw=0.3)
-                v_line, = ax.plot(plot_Theta1[:, i], plot_Theta2[:, i], color='black', lw=0.3)
-                artists.extend([h_line, v_line])
+                valid_indices_hor = self.valid_mask[i, :]
+                valid_indices_ver = self.valid_mask[:, i]
+                valid_indices_hor2 = self.valid_mask2[i, :]
+                valid_indices_ver2 = self.valid_mask2[:, i]
+                h_line, = ax.plot(plot_Theta1[i, valid_indices_hor], plot_Theta2[i, valid_indices_hor], color='black', lw=0.9)
+                v_line, = ax.plot(plot_Theta1[valid_indices_ver, i], plot_Theta2[valid_indices_ver, i], color='black', lw=0.9)
+                h_line2, = ax.plot(plot_Theta1[i, valid_indices_hor2], plot_Theta2[i, valid_indices_hor2], color='black', lw=0.9)
+                v_line2, = ax.plot(plot_Theta1[valid_indices_ver2, i], plot_Theta2[valid_indices_ver2, i], color='black', lw=0.9)
+                artists.extend([h_line, v_line, h_line2, v_line2])
 
             frames_artists.append(artists)
 
@@ -118,12 +131,20 @@ class theta_plotter:
         fig, ax = plt.subplots(figsize=(10, 10), dpi=400)
 
         # Plot the transformed grid lines
-        for i in range(self.Theta1.shape[1]):  # Draw fewer lines for clarity
-            ax.plot(self.Theta1[i, :], self.Theta2[i, :], color='black', lw=0.3, alpha=0.9)
-            ax.plot(self.Theta1[:, i], self.Theta2[:, i], color='black', lw=0.3, alpha=0.9)
+        for i in range(self.Theta1.shape[1]):  # Draw fewer lines for 
+            valid_indices_hor = self.valid_mask[i, :]
+            valid_indices_ver = self.valid_mask[:, i]
+            valid_indices_hor2 = self.valid_mask2[i, :]
+            valid_indices_ver2 = self.valid_mask2[:, i]
+            ax.plot(self.Theta1[i, valid_indices_hor], self.Theta2[i, valid_indices_hor], color='black', lw=0.9)
+            ax.plot(self.Theta1[valid_indices_ver, i], self.Theta2[valid_indices_ver, i], color='black', lw=0.9)
+            ax.plot(self.Theta1[i, valid_indices_hor2], self.Theta2[i, valid_indices_hor2], color='black', lw=0.9)
+            ax.plot(self.Theta1[valid_indices_ver2, i], self.Theta2[valid_indices_ver2, i], color='black', lw=0.9)
+                
 
         # Save the figure
         plt.savefig(output_path, dpi=400, bbox_inches='tight', pad_inches=0)
+        #plt.show()
         plt.close(fig)
 
 
