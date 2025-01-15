@@ -19,25 +19,24 @@ def dynamical_matrices(rp: dict, q: Tensor, q_d: Tensor) -> Tuple[Tensor, Tensor
         C_q: coriolis and centrifugal matrix of shape (2, 2)
         G_q: gravitational matrix of shape (2, )     
     """
-       
     c1 = torch.cos(q[0]).unsqueeze(0)
     c2 = torch.cos(q[1]).unsqueeze(0)
     s12 = torch.cos(q[0]-q[1]).unsqueeze(0)
     c12 = torch.cos(q[0]-q[1]).unsqueeze(0)
     
     M_q_11 = torch.tensor([rp["l1"]**2 * rp["m"]]).to(device) 
-    M_q_1 = torch.cat((M_q_11, rp["l1"] * rp["l2"] * rp["m"] * c12), dim = 0).unsqueeze(0)
+    M_q_1 = torch.cat((M_q_11, (rp["l1"] * rp["l2"] * rp["m"] * c12).to(device)), dim = 0).unsqueeze(0)
     M_q_22 = torch.tensor([rp["l2"]**2 * rp["m"]]).to(device) 
-    M_q_2 = torch.cat((rp["l1"] * rp["l2"] * rp["m"] * c12, M_q_22), dim = 0).unsqueeze(0)
+    M_q_2 = torch.cat(((rp["l1"] * rp["l2"] * rp["m"] * c12).to(device), M_q_22), dim = 0).unsqueeze(0)
     M_q = torch.cat((M_q_1, M_q_2), dim = 0)
         
     C_q_11 = torch.tensor([0]).to(device) 
-    C_q_1 = torch.cat((C_q_11, rp["l1"] * rp["l2"] * rp["m"] * q_d[1] * s12), dim=0).unsqueeze(0)
-    C_q_2 = torch.cat((-rp["l1"] * rp["l2"] * rp["m"] * q_d[0] * s12, C_q_11), dim=0).unsqueeze(0)
+    C_q_1 = torch.cat((C_q_11, (rp["l1"] * rp["l2"] * rp["m"] * q_d[1] * s12).to(device)), dim=0).unsqueeze(0)
+    C_q_2 = torch.cat(((-rp["l1"] * rp["l2"] * rp["m"] * q_d[0] * s12).to(device), C_q_11), dim=0).unsqueeze(0)
     C_q = torch.cat((C_q_1, C_q_2), dim = 0)
     
-    G_q_1 = torch.tensor([rp["g"] * rp["l1"] * rp["m"]]).unsqueeze(0).to(device)  * c1
-    G_q_2 = torch.tensor([rp["g"] * rp["l1"] * rp["m"]]).unsqueeze(0).to(device)  * c2
+    G_q_1 = torch.tensor([rp["g"] * rp["l1"] * rp["m"]]).unsqueeze(0).to(device)  * c1.to(device)
+    G_q_2 = torch.tensor([rp["g"] * rp["l1"] * rp["m"]]).unsqueeze(0).to(device)  * c2.to(device)
     G_q = torch.cat((G_q_1, G_q_2), dim = 0)
 
 
