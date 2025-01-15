@@ -1,7 +1,7 @@
 import torch
 
 # Number of samples
-n_samples = 3000
+n_samples = 10000
 
 # Data range
 q1_low  = -torch.pi
@@ -16,3 +16,4 @@ q2 = q2_low + (q2_high - q2_low) * torch.rand(n_samples)
 # Stack q1 and q2 to get the 2D coordinates
 points = torch.stack([q1, q2], axis=1)
 #points = torch.stack([q1, q2, q1_d, q2_d], axis=1)
+
