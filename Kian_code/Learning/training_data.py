@@ -1,7 +1,7 @@
 import torch
 
 # Number of samples
-n_samples = 10000
+n_samples = 100000
 
 # Data range
 q1_low  = -torch.pi
