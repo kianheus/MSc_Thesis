@@ -35,7 +35,7 @@ def plot_3d_double(points_tensor, z1, z2, plot_title, title_1, title_2, zlabel, 
     ylabel = "$q_2$ (rad)"
 
     # Left plot: Analytic function
-    axes[0].plot_trisurf(x, y, z1, cmap='viridis', edgecolor='none', )
+    axes[0].scatter(x, y, z1, edgecolor='none', )
     axes[0].set_xlabel(xlabel)
     axes[0].set_ylabel(ylabel)
     axes[0].set_zlabel(zlabel)
@@ -46,12 +46,12 @@ def plot_3d_double(points_tensor, z1, z2, plot_title, title_1, title_2, zlabel, 
         axes[0].set_zlim(z_limits)
 
     # Right plot: Learned function
-    surf = axes[1].plot_trisurf(x, y, z2, cmap='plasma', edgecolor='none')
-    axes[1].set_xlabel(xlabel)
+    surf = axes[1].scatter(x, y, z2, edgecolor='none')
+    im = axes[1].set_xlabel(xlabel)
     axes[1].set_ylabel(ylabel)
     axes[1].set_zlabel(zlabel)
     axes[1].set_title(title_2)
 
     # Add colorbar for both plots
-    fig.colorbar(surf, ax=axes, shrink=0.5, aspect=15, orientation='vertical', label=zlabel)
+    #fig.colorbar(surf, ax=axes, shrink=0.5, aspect=15, orientation='vertical', label=zlabel)
     plt.show()   
