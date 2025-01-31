@@ -98,4 +98,12 @@ def analytic_theta_2(rp: dict, q: Tensor) -> Tensor:
     th2 = torch.atan2(Ry,Rx)
     
     return th2
+
+def analytic_theta(rp:dict, q: Tensor) -> Tensor:
+    th1 = analytic_theta_1(rp, q)
+    th2 = analytic_theta_2(rp, q)
+
+    th = torch.stack([th1, th2], dim=-1)
+
+    return th
     
