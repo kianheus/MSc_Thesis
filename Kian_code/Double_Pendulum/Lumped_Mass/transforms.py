@@ -22,21 +22,6 @@ def transform_M_from_inverse(M_q: Tensor, J_h_inv: Tensor,
 
     return M_th
 
-def transform_dynamical_matrices(M_q: Tensor, C_q: Tensor, G_q: Tensor, J_h: Tensor, 
-                                device: torch.device) -> Tuple[Tensor, Tensor, Tensor]:
-
-    # Obtain inverse and transpose inverse Jacobian
-    J_h_inv = J_h.transpose(1,2).to(device)
-    J_h_inv_trans = J_h.to(device)
-
-    # @ performs batched matrix multiplication on the terms
-    M_th = J_h_inv_trans @ M_q @ J_h_inv
-    C_th = None
-    G_th = J_h_inv_trans @ G_q
-
-    
-    return M_th, C_th, G_th
-
 def transform_dynamical_from_inverse(M_q: Tensor, C_q: Tensor, G_q: Tensor, theta: Tensor, theta_d: Tensor,
                                      J_h_inv: Tensor, J_h_inv_trans: Tensor) -> Tuple[Tensor, Tensor, Tensor]:
 
