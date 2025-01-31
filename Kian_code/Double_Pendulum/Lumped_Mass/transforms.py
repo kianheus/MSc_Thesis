@@ -67,9 +67,9 @@ def transform_input_matrix(A_q: Tensor, J_h: Tensor, device: torch.device) -> Te
 
     return A_th
 
-def transform_input_matrix_from_inverse(A_q: Tensor, J_h_inv: Tensor, device: torch.device) -> Tensor:
+def transform_input_matrix_from_inverse_trans(A_q: Tensor, J_h_inv_trans: Tensor, device: torch.device) -> Tensor:
 
-    A_th = J_h_inv @ A_q
+    A_th = J_h_inv_trans @ A_q
 
     return A_th
 
