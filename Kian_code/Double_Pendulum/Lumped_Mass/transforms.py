@@ -81,9 +81,9 @@ def analytic_theta_1(rp: dict, q: Tensor) -> Tensor:
     Rx = rp["xa"] - rp["l1"] * torch.cos(q[0]) - rp["l2"] * torch.cos(q[1])
     Ry = rp["ya"] - rp["l1"] * torch.sin(q[0]) - rp["l2"] * torch.sin(q[1])
     
-    h1 = torch.sqrt(Rx**2 + Ry**2)
+    th1 = torch.sqrt(Rx**2 + Ry**2)
     
-    return h1
+    return th1
     
     
 def analytic_theta_2(rp: dict, q: Tensor) -> Tensor:
@@ -95,6 +95,7 @@ def analytic_theta_2(rp: dict, q: Tensor) -> Tensor:
     Rx = rp["xa"] - rp["l1"] * torch.cos(q[0]) - rp["l2"] * torch.cos(q[1])
     Ry = rp["ya"] - rp["l1"] * torch.sin(q[0]) - rp["l2"] * torch.sin(q[1])    
     
-    h2 = torch.atan2(Ry,Rx)
+    th2 = torch.atan2(Ry,Rx)
     
-    return h2
+    return th2
+    
