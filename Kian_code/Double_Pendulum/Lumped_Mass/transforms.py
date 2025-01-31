@@ -162,3 +162,19 @@ def analytic_inverse(rp: dict, th: Tensor) -> Tuple:
     q_ccw = q_alt
     
     return q_cw, q_ccw
+
+
+def forward_kinematics(rp, q):
+
+    x_end = rp["l1"] * torch.cos(q[0]) + rp["l2"] * torch.cos(q[1])
+    y_end = rp["l1"] * torch.sin(q[0]) + rp["l2"] * torch.sin(q[1])
+
+    pos_end = torch.stack([x_end, y_end], dim=-1)
+
+    x_elbow = rp["l1"] * torch.cos(q[0])
+    y_elbow = rp["l1"] * torch.sin(q[0])
+
+    pos_elbow = torch.stack([x_elbow, y_elbow], dim=-1)
+
+    return pos_end, pos_elbow
+
