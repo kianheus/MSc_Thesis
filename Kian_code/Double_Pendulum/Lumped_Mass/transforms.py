@@ -106,4 +106,59 @@ def analytic_theta(rp:dict, q: Tensor) -> Tensor:
     th = torch.stack([th1, th2], dim=-1)
 
     return th
+
+
+def analytic_inverse(rp: dict, th: Tensor) -> Tuple:
+
+    """
+    Inverse kinematics from theta to q, based on the end-effector
+    position (xend, yend). 
+    Returns a tuple with two sets of joint angles, one for clockwise
+    and one for counter-clockwise configuration.
+    """
+
+    # Obtain end effector position.
+
+    xend = rp["xa"] - th[0]*torch.cos(th[1])
+    yend = rp["ya"] - th[0]*torch.sin(th[1])
+
+    # Calculate the inside angle of the two joints, used to determine q1. Epsilon prevents NaN.
+    epsilon = 0.00001
+
+    numerator = (xend**2 + yend**2 - rp["l1"]**2 - rp["l2"]**2)
+    denominator = torch.tensor(2*rp["l1"]*rp["l2"])
+    fraction = numerator/denominator
+
+    """
+    if torch.abs(fraction - 1) > 1.1:
+        raise ValueError("End effector outside of robot reach, inverse cannot be calculated")
+    else:
+    """
     
+    epsilon = 1e-6
+    fraction = torch.clamp(fraction, -1.0 + epsilon, 1.0 - epsilon)
+
+    beta = torch.arccos(fraction)
+
+    # Determine primary angles.
+    q1 = torch.atan2(yend, xend + epsilon) - torch.atan2(rp["l2"]*torch.sin(beta), epsilon + rp["l1"] + rp["l2"]*torch.cos(beta))
+    q2 = q1 + beta
+
+    # Determine secondary angles.
+    q1_alt = torch.atan2(yend, xend) + torch.atan2(rp["l2"]*torch.sin(beta), epsilon + rp["l1"] + rp["l2"]*torch.cos(beta))
+    q2_alt = q1_alt - beta 
+
+    # Normalize values between -pi and pi.
+    q1 = (q1 + torch.pi) % (2 * torch.pi) - torch.pi
+    q2 = (q2 + torch.pi) % (2 * torch.pi) - torch.pi
+    q1_alt = (q1_alt + torch.pi) % (2 * torch.pi) - torch.pi
+    q2_alt = (q2_alt + torch.pi) % (2 * torch.pi) - torch.pi
+
+    q = torch.stack([q1, q2], dim=-1)
+    q_alt = torch.stack([q1_alt, q2_alt], dim=-1)
+
+    # Check whether the primary angle is clockwise. Otherwise, swap with secondary.
+    q_cw = q
+    q_ccw = q_alt
+    
+    return q_cw, q_ccw
