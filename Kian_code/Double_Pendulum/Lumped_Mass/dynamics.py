@@ -42,36 +42,6 @@ def dynamical_matrices(rp: dict, q: Tensor, q_d: Tensor) -> Tuple[Tensor, Tensor
 
     return M_q, C_q, G_q 
 
-def dynamical_matrices_th(rp: dict, q: Tensor, q_d: Tensor) -> Tuple[Tensor, Tensor, Tensor]:
-    """
-    Computes the dynamical matrices (analytically) in the equation
-    M_th @ th_dd + C_th @ th_d + G_th = tau_q
-
-    Args:
-        rp: dictionary of robot parameters
-        q: link angles of shape (2, )
-        q_d: link angular velocities of shape (2, )
-    Returns:
-        M_th: inertial matrix of shape (2, 2)
-        C_th: coriolis and centrifugal matrix of shape (2, 2)
-        G_th: gravitational matrix of shape (2, )     
-    """
-    
-    A = rp["xa"] - rp["l1"] * torch.cos(q[0]) - rp["l2"] * torch.cos(q[1])
-    B = rp["ya"] - rp["l1"] * torch.sin(q[0]) - rp["l2"] * torch.sin(q[1])
-    
-    tensor_0 = torch.tensor([0.]).to(device)
-    
-    M_th_11 = torch.tensor([rp["m"]]).to(device) 
-    M_th_1 = torch.cat((M_th_11, tensor_0), dim = 0).unsqueeze(0)
-    M_th_2 = torch.cat((tensor_0, (rp["m"]*(A**2+B**2)).unsqueeze(0)), dim = 0).unsqueeze(0)
-    M_th = torch.cat((M_th_1, M_th_2), dim = 0)
-
-    C_th = torch.tensor([float("nan")])
-    
-    G_th = torch.tensor([float("nan")])
-
-    return M_th, C_th, G_th 
 
 def input_matrix(rp: dict, q: Tensor) -> Tensor:
 
