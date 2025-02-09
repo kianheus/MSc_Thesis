@@ -11,27 +11,24 @@ class Anim_plotter():
         self.rp = rp
         self.robot_range = 1.2 * (self.rp["l1"] + self.rp["l2"])
 
+        
 
-    def frame_pendulum(self, pos_end, pos_elbow, colors = None, x_des = None, height = 6, width = 6):
+
+    def frame_pendulum(self, pos_end, pos_elbow):
         """
         Plot a double pendulum using matplotlib
         
         Parameters:
-        x_elbow (torch.Tensor): [x, y] coordinates of the elbow joint
-        x (torch.Tensor): [x, y] coordinates of the end point
+        pos_end (torch.Tensor): [x, y] coordinates of the end joint
+        pos_elbow (torch.Tensor): [x, y] coordinates of the elbow point
         """
-        
-        if colors is None:
-            colors = ["orange" for i in range(pos_end.size(0))]
-
         # Initialize data storage for animation frames
         frames_data = []
 
         # Shoulder joint is the same for all frames
         shoulder = torch.tensor([0, 0]).numpy()
 
-        for pos_end, pos_elbow, color in zip(pos_end, pos_elbow, colors):
-
+        for pos_end, pos_elbow in zip(pos_end, pos_elbow):
             # Extract frame data as numpy arrays
             endpoint = pos_end.cpu().detach().numpy()
             elbow = pos_elbow.cpu().detach().numpy()
@@ -46,8 +43,7 @@ class Anim_plotter():
                     {"position": shoulder.tolist()},
                     {"position": elbow.tolist()},
                     {"position": endpoint.tolist()}
-                ],
-                "color": color
+                ]
             })
 
         return frames_data
