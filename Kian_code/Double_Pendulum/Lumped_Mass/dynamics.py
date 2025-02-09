@@ -65,3 +65,24 @@ def input_matrix(rp: dict, q: Tensor) -> Tensor:
     A_q = torch.cat((A_q1, A_q2), dim = 0)
 
     return A_q
+
+
+def jacobian(rp: dict, q: Tensor) -> Tensor:
+
+    """
+    Computes the forward Jacobian (analytically) as
+    Jh = d(q)/d(t)
+    """
+
+    Rx = rp["xa"] - rp["l1"] * torch.cos(q[0]) - rp["l2"] * torch.cos(q[1])
+    Ry = rp["ya"] - rp["l1"] * torch.sin(q[0]) - rp["l2"] * torch.sin(q[1])
+
+    l = torch.sqrt(Rx**2 + Ry**2)
+    alpha = torch.atan2(Ry, Rx)
+    
+    Jh = torch.cat((torch.autograd.grad(l, q, create_graph=True)[0].unsqueeze(0),
+                       torch.autograd.grad(alpha, q, create_graph=True)[0].unsqueeze(0)), dim=0)
+    
+    return Jh
+
+#def inverse_jacobian(rp: dict, th: Tensor) -> Tensor:
