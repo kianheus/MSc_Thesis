@@ -1,5 +1,6 @@
 import torch
 import torch.nn as nn
+from functools import partial
 
 import Double_Pendulum.Lumped_Mass.transforms as transforms
 
@@ -13,7 +14,7 @@ however, this can be extended and made modular depending on __init__ conditions.
 class Autoencoder_double(nn.Module):
     def __init__(self, rp):
         super().__init__()
-        self.encoder = nn.Sequential(
+        self.enc = nn.Sequential(
             nn.Linear(2, 16),
             nn.Softplus(),
             nn.Linear(16, 16),
@@ -22,7 +23,7 @@ class Autoencoder_double(nn.Module):
         )
         
         
-        self.decoder = nn.Sequential(
+        self.dec = nn.Sequential(
             nn.Linear(2, 16),
             nn.Softplus(),
             nn.Linear(16, 16),
@@ -47,6 +48,14 @@ class Autoencoder_double(nn.Module):
         #theta_2_ana, _ = torch.vmap(self.encoder_theta_2_ana)(q)
         #theta_ana = torch.cat((theta_1_ana, theta_2_ana), dim=1)
         return theta_ana
+    
+    def encoder(self, q):
+        theta = self.enc(q)
+        return theta
+    
+    def decoder(self, theta, clockwise=None):
+        q_hat = self.dec(theta)
+        return q_hat
 
     def encoder_nn(self, q):
         theta = self.encoder(q)
@@ -56,13 +65,13 @@ class Autoencoder_double(nn.Module):
         q_hat = self.decoder(theta)
         return q_hat, q_hat
     
-    def jacobian_enc(self, q):
+    def jacobian_enc(self, q, clockwise=None):
         J_h, theta = torch.vmap(torch.func.jacfwd(self.encoder_nn, has_aux=True))(q)
-        return J_h
+        return J_h.squeeze(0)
 
-    def jacobian_dec(self, theta):
+    def jacobian_dec(self, theta, clockwise=None):
         J_h_dec, q_hat = torch.vmap(torch.func.jacfwd(self.decoder_nn, has_aux=True))(theta)
-        return J_h_dec
+        return J_h_dec.squeeze(0)
     
     def forward(self, q):
         
@@ -95,10 +104,13 @@ class Analytic_transformer():
         #theta_ana = torch.cat((theta_1_ana, theta_2_ana), dim=1)
         return theta_ana
     
-    def decoder(self, theta):
-        q_cw, q_ccw = torch.vmap(transforms.analytic_inverse, in_dims=(None, 0))(self.rp, theta)
-        return q_ccw#, q_ccw
-    
+    def decoder(self, theta, clockwise):
+        q_ccw, q_cw = torch.vmap(transforms.analytic_inverse, in_dims=(None, 0))(self.rp, theta)
+        if clockwise:
+            return q_cw
+        else:
+            return q_ccw
+            
     def encoder_theta_1_ana(self, q):
         theta_1 = transforms.analytic_theta_1(self.rp, q).unsqueeze(0)
         return theta_1, theta_1
@@ -119,16 +131,17 @@ class Analytic_transformer():
         theta = self.encoder(q)
         return theta, theta
     
-    def decoder_nn(self, theta):
-        q_hat = self.decoder(theta)
+    def decoder_nn(self, theta, clockwise):
+        q_hat = self.decoder(theta, clockwise=clockwise)
         return q_hat, q_hat
 
     def jacobian_enc(self, q):
         J_h, theta = torch.func.jacfwd(self.encoder_nn, has_aux=True)(q)
-        return J_h.squeeze(0).squeeze(1)
+        return J_h.squeeze(0).squeeze(1)  
     
-    def jacobian_dec(self, theta):
-        J_h_dec, q_hat = torch.func.jacfwd(self.decoder_nn, has_aux=True)(theta)
+    def jacobian_dec(self, theta, clockwise):
+        jac_fn = partial(self.decoder_nn, clockwise=clockwise)
+        J_h_dec, q_hat = torch.func.jacfwd(jac_fn, has_aux=True)(theta)
         return J_h_dec.squeeze(0).squeeze(1)
     
     def forward(self, q):
@@ -137,6 +150,8 @@ class Analytic_transformer():
 
 
         J_h, theta = torch.vmap(torch.func.jacfwd(self.encoder_nn, has_aux=True))(q)
-        J_h_dec, q_hat = torch.vmap(torch.func.jacfwd(self.decoder_nn, has_aux=True))(theta)
+        J_h_dec, q_hat = torch.vmap(torch.func.jacfwd(self.decoder_nn_cw, has_aux=True))(theta)
+        print("Only taking cw decoder, are you sure you want this?")
+        # Change depending on your use case
 
         return theta, J_h, q_hat, J_h_dec, J_h_ana
