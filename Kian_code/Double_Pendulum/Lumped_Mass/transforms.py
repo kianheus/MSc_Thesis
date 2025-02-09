@@ -163,3 +163,41 @@ def forward_kinematics(rp, q):
 
     return pos_end, pos_elbow
 
+def inverse_kinematics(rp, pos, is_clockwise):
+    xend = pos[0]
+    yend = pos[1]
+
+    numerator = (xend**2 + yend**2 - rp["l1"]**2 - rp["l2"]**2)
+    denominator = torch.tensor(2*rp["l1"]*rp["l2"])
+    fraction = numerator/denominator
+
+    beta = torch.arccos(fraction)
+
+    # Determine primary angles.
+    q1 = torch.atan2(yend, xend) - torch.atan2(rp["l2"]*torch.sin(beta), rp["l1"] + rp["l2"]*torch.cos(beta))
+    q2 = q1 + beta
+
+    # Determine secondary angles.
+    q1_alt = torch.atan2(yend, xend) + torch.atan2(rp["l2"]*torch.sin(beta), rp["l1"] + rp["l2"]*torch.cos(beta))
+    q2_alt = q1_alt - beta 
+
+    # Normalize values between -pi and pi.
+    q1 = (q1 + torch.pi) % (2 * torch.pi) - torch.pi
+    q2 = (q2 + torch.pi) % (2 * torch.pi) - torch.pi
+    q1_alt = (q1_alt + torch.pi) % (2 * torch.pi) - torch.pi
+    q2_alt = (q2_alt + torch.pi) % (2 * torch.pi) - torch.pi
+
+    q = torch.stack([q1, q2], dim=-1)
+    q_alt = torch.stack([q1_alt, q2_alt], dim=-1)
+
+    # Check whether the primary angle is clockwise. Otherwise, swap with secondary.
+    q_cw = q_alt
+    q_ccw = q
+
+    if is_clockwise:
+        q_out = q_cw
+    else:
+        q_out = q_ccw
+    
+    return q_out
+
