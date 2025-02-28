@@ -1,6 +1,7 @@
 import torch
 from torch import Tensor
 from typing import Tuple
+from functools import partial
 
 
 
@@ -233,3 +234,17 @@ def check_clockwise(q):
     return clockwise
 
 
+# Function to flip joint angles to their (counter)clockwise equivalent, depending on input "flilp_to_cw".
+def flip_q(rp, q, flip_to_cw):
+    pos, _ = forward_kinematics(rp, q)
+    q_flipped = inverse_kinematics(rp, pos, is_clockwise=flip_to_cw)
+    if torch.allclose(q, q_flipped):
+        print("WARNING: q flipped but retained same value, did you select the right orientation?")
+    return q_flipped
+
+# Function to flip joint velocities to their (counter)clockwise equivalent, depending on input "flilp_to_cw".
+def flip_q_d(rp, q, q_d, flip_to_cw):
+    pos, _ = forward_kinematics(rp, q)
+    ik_partial = partial(inverse_kinematics, rp = rp, is_clockwise=flip_to_cw)
+    J = torch.autograd.functional.jacobian(ik_partial, inputs=q.squeeze(0))
+    q_d = (J @ q_d.T).T
