@@ -210,3 +210,8 @@ def select_q(q_cw, q_ccw, q_old, q_d, dt):
     else:
         q_correct = q_ccw
     return q_correct
+"""
+
+def wrap_to_pi(q):
+    return (q + torch.pi) % (2 * torch.pi) - torch.pi
+
