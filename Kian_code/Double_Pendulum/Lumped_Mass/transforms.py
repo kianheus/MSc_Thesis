@@ -225,3 +225,11 @@ def shift_q(q, clockwise = False):
             q[shift_mask, 1] += 2 * torch.pi 
     return q
 
+def check_clockwise(q):
+    if (q[1] >= q[0] and q[1] <= q[0] + torch.pi) or (q[1] >= q[0] - 2 * torch.pi and q[1] <= q[0] - torch.pi):
+        clockwise = False
+    else:
+        clockwise = True
+    return clockwise
+
+
