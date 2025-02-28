@@ -202,16 +202,6 @@ def inverse_kinematics(rp, pos, is_clockwise):
     
     return q_out
 
-def select_q(q_cw, q_ccw, q_old, q_d, dt):
-    q_step = q_old + q_d * dt
-    cw_error = torch.sum(q_step - q_cw)
-    ccw_error = torch.sum(q_step - q_ccw)
-    if cw_error <= ccw_error:
-        q_correct = q_cw
-    else:
-        q_correct = q_ccw
-    return q_correct
-"""
 
 def wrap_to_pi(q):
     return (q + torch.pi) % (2 * torch.pi) - torch.pi
