@@ -215,3 +215,13 @@ def select_q(q_cw, q_ccw, q_old, q_d, dt):
 def wrap_to_pi(q):
     return (q + torch.pi) % (2 * torch.pi) - torch.pi
 
+def shift_q(q, clockwise = False):
+    with torch.no_grad():
+        if clockwise:
+            shift_mask = (q[:, 0] < 0) & (q[:, 1] > 0)
+            q[shift_mask, 1] -= 2 * torch.pi
+        else:
+            shift_mask = (q[:, 0] > 0) & (q[:, 1] < 0)
+            q[shift_mask, 1] += 2 * torch.pi 
+    return q
+
