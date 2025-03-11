@@ -135,15 +135,19 @@ class Analytic_transformer():
         q_hat = self.decoder(theta, clockwise=clockwise)
         return q_hat, q_hat
 
-    def jacobian_enc(self, q):
-        J_h, theta = torch.func.jacfwd(self.encoder_nn, has_aux=True)(q)
-        return J_h.squeeze(0).squeeze(1)  
-    
-    def jacobian_dec(self, theta, clockwise):
+    def jacobian_enc(self, q, clockwise=None):
+        J_oversized, theta = torch.func.jacfwd(self.encoder_nn, has_aux=True)(q)
+        #Downsample the Jacobian to prevent problems with double vmapping
+        J_h = J_oversized.diagonal(offset=0, dim1=0, dim2=1)
+        return J_h.squeeze(0)
+
+    def jacobian_dec(self, theta, clockwise=None):
         jac_fn = partial(self.decoder_nn, clockwise=clockwise)
-        J_h_dec, q_hat = torch.func.jacfwd(jac_fn, has_aux=True)(theta)
-        return J_h_dec.squeeze(0).squeeze(1)
-    
+        J_dec_oversized, q_hat = torch.func.jacfwd(jac_fn, has_aux=True)(theta)
+        #Downsample the Jacobian to prevent problems with double vmapping
+        J_h_dec = J_dec_oversized.diagonal(offset=0, dim1=0, dim2=1)
+        raise Exception("Analytic inverse Jacobian calculation is incorrect. Use (pseudo)inverse of encoder Jacobian instead.")
+        return J_h_dec.squeeze(0)
     def forward(self, q):
 
         J_h_ana = self.jacobian_enc(q)
