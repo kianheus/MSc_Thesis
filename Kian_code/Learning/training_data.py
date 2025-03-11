@@ -7,7 +7,7 @@ n_samples = 100000
 q1_low  = -torch.pi
 q1_high = torch.pi
 q2_low  = -torch.pi
-q2_high = torch.pi
+q2_high = 2*torch.pi
 
 # Generate uniformly distributed points for q1 and q2
 q1 = q1_low + (q1_high - q1_low) * torch.rand(n_samples)
