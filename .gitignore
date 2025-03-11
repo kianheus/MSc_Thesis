@@ -160,3 +160,5 @@ tmp/
 /*.zip
 *.mp4
 *.png
+/Kian_code/Models/Split_AEs
+/Kian_code/Plotting/Pendulum_plots/Clockwise_demo
