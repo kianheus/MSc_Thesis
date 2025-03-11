@@ -270,3 +270,98 @@ class Anim_plotter():
 
 
         plt.show()
+
+
+
+class Error_plotter:
+    def __init__(self, rp):
+        """
+        Initialize with robot parameters (not sure if necessary).
+        """
+        self.rp = rp
+
+    def create_plot_dataset(self, t, datasets, reference, name):
+        """
+        Prepares a plot dataset for a single subplot column.
+        All datasets passed in will be drawn on the same pair of subplots.
+        
+        Parameters:
+            t: the common x-axis (time) values for all the datasets
+            datasets: a list of dictionaries. Each dictionary should have:
+                - "name": a name for the dataset (e.g. "est_series")
+                - "values": a 2D NumPy array where column 0 is y1 data and column 1 is y2 data
+                - "color": a matplotlib color specifier for the dataset’s line
+            reference: the reference value(s) for the controller
+            name: name of the subplot. displayed at the top of the column
+        
+        Returns:
+            A dictionary (plot_dataset) holding all the information needed for one column of subplots.
+        """
+        # Create a dictionary to hold all the plotting data for one column.
+        plot_dataset = {
+            "plot_name": name,
+            "x": t,
+            "data": [],  # will hold multiple dataset entries (lines) to be plotted together
+            "reference": reference.cpu().detach().numpy()[0]
+        }
+
+        # Iterate over each dataset and store its info.
+        for dataset in datasets:
+            line_data = {
+                "name": dataset["name"],
+                "color": dataset["color"],
+                "y1": dataset["values"][:, 0],
+                "y2": dataset["values"][:, 1]
+            }
+            plot_dataset["data"].append(line_data)
+
+        return plot_dataset
+
+    def plot_multi(self, plot_datasets, file_name, axes_names):
+        """
+        Creates a figure with 2 rows and n columns.
+        Each column is built from one plot_dataset (i.e. a group of lines plotted on the same axes).
+        
+        Parameters:
+            plot_datasets: a list of plot_dataset dictionaries as returned by create_plot_dataset.
+            file_name: file name for saving the plot.
+        """
+        n = len(plot_datasets)  # number of subplot columns
+        # Create subplots: 2 rows (one for y1 and one for y2) and n columns.
+        fig, axes = plt.subplots(2, n, figsize=(5 * n, 8))
+        
+        # When n == 1, axes may be 1D, so force it to be 2D.
+        if n == 1:
+            axes = axes.reshape(2, 1)
+
+        # Iterate over each subplot column.
+        for col_index, ps in enumerate(plot_datasets):
+            x = ps["x"]
+            for i in range(2):
+                ykey = "y" + str(i+1)
+                ref = ps["reference"][i]
+                # Plot all lines for y1 on the top subplot of the column.
+                reference_line = Line2D([0], [0], color="dimgray", linestyle="--", label="ref")
+                line_handles = []
+                axes[i, col_index].axhline(ref, color="dimgray", ls="--")
+                for line in ps["data"]:
+                    line_handle, = axes[i, col_index].plot(x, line[ykey], label=line["name"], color=line["color"])
+                    line_handles.append(line_handle)
+                line_handles.append(reference_line)
+                axes[i, col_index].set_title(ps["plot_name"])
+                axes[i, col_index].set_xlabel("Time")
+                axes[i, col_index].set_ylabel(str(axes_names[col_index]) + "_" + str(i))
+                axes[i, col_index].legend(handles=line_handles)
+                axes[i, col_index].grid(True, linestyle='--')
+
+        overall_title = "Trajectory plots: x_a = " + str(self.rp["xa"]) + ", y_a = " + str(self.rp["ya"])
+        fig.suptitle(overall_title, fontsize=16)
+        # Adjust layout to make room for the suptitle.
+        plt.tight_layout(rect=[0, 0, 1, 0.96])
+
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        output_path = os.path.join(script_dir, "..", "Plotting", "Error_plots", file_name)
+
+        # Save and display the figure.
+        plt.savefig(output_path)
+        plt.show()
