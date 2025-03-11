@@ -17,7 +17,7 @@ def plot_data(device, points_tensor):
     return plot_points
 """
 
-def plot_3d_double(points_tensor, z1, z2, plot_title, title_1, title_2, zlabel, device, z_limits = None):
+def plot_3d_double(points_tensor, z1, z2, plot_title, title_1, title_2, xlabel, ylabel, zlabel, device, z_limits = None):
      # Create side-by-side plots
     fig, axes = plt.subplots(1, 2, figsize=(12, 4), subplot_kw={'projection': '3d'})
     plt.subplots_adjust(top=0.85)
@@ -31,9 +31,6 @@ def plot_3d_double(points_tensor, z1, z2, plot_title, title_1, title_2, zlabel, 
     #z1 = z1.view((50, 50)).cpu().numpy()
     #z2 = z2.view((50, 50)).cpu().numpy()
 
-    xlabel = "$q_1$ (rad)"
-    ylabel = "$q_2$ (rad)"
-
     # Left plot: Analytic function
     axes[0].scatter(x, y, z1, edgecolor='none', )
     axes[0].set_xlabel(xlabel)
@@ -44,7 +41,8 @@ def plot_3d_double(points_tensor, z1, z2, plot_title, title_1, title_2, zlabel, 
     # Apply z-limits if provided
     if z_limits is not None:
         axes[0].set_zlim(z_limits)
-
+        axes[1].set_zlim(z_limits)
+        
     # Right plot: Learned function
     surf = axes[1].scatter(x, y, z2, edgecolor='none')
     im = axes[1].set_xlabel(xlabel)
