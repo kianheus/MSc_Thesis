@@ -79,10 +79,12 @@ class Autoencoder_double(nn.Module):
         J_h_2_ana, theta_2_ana = torch.vmap(torch.func.jacfwd(self.encoder_theta_2_ana, has_aux=True))(q)
         J_h_ana = torch.cat((J_h_1_ana, J_h_2_ana), dim=1).float()
         
-        
-        J_h, theta = torch.vmap(torch.func.jacfwd(self.encoder_vmap, has_aux=True))(q)
-
-        J_h_dec, q_hat = torch.vmap(torch.func.jacfwd(self.decoder_vmap, has_aux=True))(theta)
+        theta = self.encoder(q)
+        J_h = self.jacobian_enc(q) 
+        #J_h = torch.vmap(torch.func.jacfwd(self.encoder_vmap, has_aux=False))(q)
+        q_hat = self.decoder(theta)
+        J_h_dec = self.jacobian_dec(theta)
+        #J_h_dec, q_hat = torch.vmap(torch.func.jacfwd(self.decoder_vmap, has_aux=True))(theta)
 
         return(theta, J_h, q_hat, J_h_dec, J_h_ana)
     
