@@ -47,7 +47,7 @@ class Anim_plotter():
 
         return frames_data
 
-    def animate_pendulum(self, frames_data_multi, ref_poss=None, plot_actuator = True, file_name="Placeholder.gif", fps=30, dt = 0.01):
+    def animate_pendulum(self, frames_data_multi, ref_poss=None, plot_actuator = True, save_path=None, fps=30, dt = 0.01):
 
         """
         Create and save the double pendulum animation.
@@ -67,9 +67,9 @@ class Anim_plotter():
         else:
             r_inner = None
 
-        script_dir = os.path.dirname(os.path.abspath(__file__))
-        output_path = os.path.join(script_dir, "..", "Plotting", "Pendulum_plots", file_name)
-        print(output_path)
+        #script_dir = os.path.dirname(os.path.abspath(__file__))
+        #output_path = os.path.join(script_dir, "..", "Plotting", "Pendulum_plots", file_name)
+        #print(output_path)
 
         # Initialize the plot
         fig, ax = plt.subplots(figsize=(6, 6))
@@ -263,10 +263,10 @@ class Anim_plotter():
         )
 
         # Save the animation if a path is provided
-        if output_path:
+        if save_path:
             #anim.save(output_path, fps=fps, extra_args=["-vcodec", "libx264"])
             #anim.save(output_path, writer="pillow", fps=fps)
-            anim.save(output_path, writer="ffmpeg", fps=fps, dpi=200)
+            anim.save(save_path, writer="ffmpeg", fps=fps, dpi=200)
 
 
         plt.show()
@@ -317,7 +317,7 @@ class Error_plotter:
 
         return plot_dataset
 
-    def plot_multi(self, plot_datasets, file_name, axes_names):
+    def plot_multi(self, plot_datasets, save_path, axes_names):
         """
         Creates a figure with 2 rows and n columns.
         Each column is built from one plot_dataset (i.e. a group of lines plotted on the same axes).
@@ -360,8 +360,8 @@ class Error_plotter:
         plt.tight_layout(rect=[0, 0, 1, 0.96])
 
         script_dir = os.path.dirname(os.path.abspath(__file__))
-        output_path = os.path.join(script_dir, "..", "Plotting", "Error_plots", file_name)
+        #output_path = os.path.join(script_dir, "..", "Plotting", "Error_plots", file_name)
 
         # Save and display the figure.
-        plt.savefig(output_path)
+        plt.savefig(save_path)
         plt.show()
