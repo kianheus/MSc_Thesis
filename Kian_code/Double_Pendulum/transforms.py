@@ -164,7 +164,7 @@ def forward_kinematics(rp, q):
 
     return pos_end, pos_elbow
 
-def inverse_kinematics(rp, pos, is_clockwise):
+def inverse_kinematics(pos, rp, is_clockwise):
     xend = pos[0]
     yend = pos[1]
 
@@ -227,7 +227,7 @@ def check_clockwise(q):
 # Function to flip joint angles to their (counter)clockwise equivalent, depending on input "flilp_to_cw".
 def flip_q(rp, q, flip_to_cw):
     pos, _ = forward_kinematics(rp, q)
-    q_flipped = inverse_kinematics(rp, pos, is_clockwise=flip_to_cw)
+    q_flipped = inverse_kinematics(pos, rp, is_clockwise=flip_to_cw)
     if torch.allclose(q, q_flipped):
         print("WARNING: q flipped but retained same value, did you select the right orientation?")
     return q_flipped
@@ -236,5 +236,6 @@ def flip_q(rp, q, flip_to_cw):
 def flip_q_d(rp, q, q_d, flip_to_cw):
     pos, _ = forward_kinematics(rp, q)
     ik_partial = partial(inverse_kinematics, rp = rp, is_clockwise=flip_to_cw)
-    J = torch.autograd.functional.jacobian(ik_partial, inputs=q.squeeze(0))
+    J = torch.autograd.functional.jacobian(ik_partial, inputs=pos)
     q_d = (J @ q_d.T).T
+    return q_d
