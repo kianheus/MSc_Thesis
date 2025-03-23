@@ -3,7 +3,7 @@ from matplotlib.colors import LinearSegmentedColormap
 import numpy as np
 import matplotlib.pyplot as plt
 import Learning.training_data as training_data
-import Double_Pendulum.Lumped_Mass.transforms as transforms
+import Double_Pendulum.transforms as transforms
 from torch import Tensor
 import torch
 from matplotlib.animation import FuncAnimation, ArtistAnimation

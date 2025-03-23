@@ -1,8 +1,8 @@
 import numpy as np
 import torch
 from torch import Tensor
-import Double_Pendulum.Lumped_Mass.transforms as transforms
-import Double_Pendulum.Lumped_Mass.dynamics as dynamics
+import Double_Pendulum.transforms as transforms
+import Double_Pendulum.dynamics as dynamics
 from matplotlib import pyplot as plt
 
 

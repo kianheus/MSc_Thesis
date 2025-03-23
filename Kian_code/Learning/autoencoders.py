@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 from functools import partial
 
-import Double_Pendulum.Lumped_Mass.transforms as transforms
+import Double_Pendulum.transforms as transforms
 
 """
 This file contains the architectures of a number of Autoencoders used in my thesis. 
