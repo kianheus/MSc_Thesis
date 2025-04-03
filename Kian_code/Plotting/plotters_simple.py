@@ -2,6 +2,8 @@ import torch
 from torch import Tensor
 from matplotlib import pyplot as plt
 import Learning.training_data as training_data
+from mpl_toolkits.axes_grid1 import make_axes_locatable
+import os
 
 """
 def plot_data(device, points_tensor):
@@ -17,39 +19,30 @@ def plot_data(device, points_tensor):
     return plot_points
 """
 
-def plot_3d_double(points_tensor, z1, z2, plot_title, title_1, title_2, xlabel, ylabel, zlabel, device, z_limits = None):
-     # Create side-by-side plots
-    fig, axes = plt.subplots(1, 2, figsize=(12, 4), subplot_kw={'projection': '3d'})
-    plt.subplots_adjust(top=0.85)
-    fig.suptitle(plot_title, fontsize=16, y=0.85)  # General title
 
-    #plot_points, x, y = plot_data(device, points_tensor)
+def plot_3d_double(points_tensor, zs, plot_title, sub_titles, xlabel, ylabel, zlabel, folder_path):
+     
     x = points_tensor[:,0].cpu()
     y = points_tensor[:,1].cpu()
-    z1 = z1.cpu()
-    z2 = z2.cpu()
-    #z1 = z1.view((50, 50)).cpu().numpy()
-    #z2 = z2.view((50, 50)).cpu().numpy()
 
-    # Left plot: Analytic function
-    axes[0].scatter(x, y, z1, edgecolor='none', )
-    axes[0].set_xlabel(xlabel)
-    axes[0].set_ylabel(ylabel)
-    axes[0].set_zlabel(zlabel)
-    axes[0].set_title(title_1)
+    file_name = plot_title.replace(" ", "_")
+    file_path = os.path.join(folder_path, file_name)
 
-    # Apply z-limits if provided
-    if z_limits is not None:
-        axes[0].set_zlim(z_limits)
-        axes[1].set_zlim(z_limits)
-        
-    # Right plot: Learned function
-    surf = axes[1].scatter(x, y, z2, edgecolor='none')
-    im = axes[1].set_xlabel(xlabel)
-    axes[1].set_ylabel(ylabel)
-    axes[1].set_zlabel(zlabel)
-    axes[1].set_title(title_2)
+    fig, axes = plt.subplots(1, 2, figsize=(10, 4), subplot_kw={'projection': '3d'})
 
-    # Add colorbar for both plots
-    #fig.colorbar(surf, ax=axes, shrink=0.5, aspect=15, orientation='vertical', label=zlabel)
+    for i in range(2):
+        z = zs[i].cpu()
+        sc = axes[i].scatter(x, y, z, c=z, cmap="viridis", edgecolor='none')
+        axes[i].set_xlabel(xlabel)
+        axes[i].set_ylabel(ylabel)
+        axes[i].set_zlabel(zlabel)
+        axes[i].set_title(sub_titles[i])
+        divider = make_axes_locatable(axes[i])
+        cbar_ax = fig.add_axes([0.42+0.47*i, 0.19, 0.01, 0.64])
+        cbar = fig.colorbar(sc, cax=cbar_ax, orientation='vertical')
+    fig.suptitle(plot_title, fontsize=16, y=0.95)  # General title
+    fig.subplots_adjust(left=0.0, right=0.9, wspace=0.1)  
+    #plt.tight_layout
+
+    plt.savefig(file_path)
     plt.show()   
