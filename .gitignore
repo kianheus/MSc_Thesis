@@ -162,3 +162,4 @@ tmp/
 *.png
 /Kian_code/Plotting/Pendulum_plots/Clockwise_demo
 *.pth
+*.json
