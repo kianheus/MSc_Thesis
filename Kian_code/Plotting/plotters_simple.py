@@ -46,3 +46,30 @@ def plot_3d_double(points_tensor, zs, plot_title, sub_titles, xlabel, ylabel, zl
 
     plt.savefig(file_path)
     plt.show()   
+
+def plot_3d_quad(points_tensor, zs, plot_title, sub_titles, xlabel, ylabel, zlabel, folder_path):
+
+    x = points_tensor[:, 0].cpu()
+    y = points_tensor[:, 1].cpu()
+
+    file_name = plot_title.replace(" ", "_")
+    file_path = os.path.join(folder_path, file_name)
+
+    fig, axes = plt.subplots(2, 2, figsize=(10, 8.5), subplot_kw={'projection': '3d'})
+    for i in range(2):
+        for j in range(2):
+
+            z = zs[2*i + j].cpu()
+            sc = axes[i, j].scatter(x, y, z, c=z, cmap="viridis", edgecolor="none")
+            axes[i, j].set_xlabel(xlabel)
+            axes[i, j].set_ylabel(ylabel)
+            axes[i, j].set_zlabel(zlabel)
+            axes[i, j].set_title(sub_titles[2*i+j])
+            cbar_ax = fig.add_axes([0.42+0.47*j, 0.57 - 0.42*i, 0.01, 0.3])
+            fig.colorbar(sc, cax=cbar_ax, orientation='vertical')
+    
+    fig.suptitle(plot_title, fontsize=16, y=0.95)  
+    fig.subplots_adjust(left=0.0, right=0.9, wspace=0.1)  
+    plt.tight_layout
+    plt.savefig(file_path)
+    plt.show()
