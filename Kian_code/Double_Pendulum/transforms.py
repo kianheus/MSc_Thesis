@@ -182,6 +182,9 @@ def inverse_kinematics(pos, rp, is_clockwise):
     q1_alt = torch.atan2(yend, xend) + torch.atan2(rp["l2"]*torch.sin(beta), rp["l1"] + rp["l2"]*torch.cos(beta))
     q2_alt = q1_alt - beta 
 
+    if torch.isnan(q1) or torch.isnan(q2) or torch.isnan(q1_alt) or torch.isnan(q2_alt):
+        raise ValueError("NaN encountered in inverse kinematics computation.")
+
     # Normalize values between -pi and pi.
     q1 = (q1 + torch.pi) % (2 * torch.pi) - torch.pi
     q2 = (q2 + torch.pi) % (2 * torch.pi) - torch.pi
