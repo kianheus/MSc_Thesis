@@ -359,9 +359,6 @@ class Error_plotter:
         # Adjust layout to make room for the suptitle.
         plt.tight_layout(rect=[0, 0, 1, 0.96])
 
-        script_dir = os.path.dirname(os.path.abspath(__file__))
-        #output_path = os.path.join(script_dir, "..", "Plotting", "Error_plots", file_name)
-
         # Save and display the figure.
         plt.savefig(save_path)
         plt.show()
