@@ -71,7 +71,7 @@ class theta_plotter:
 
         self.q_hat = (q1_hat.view(n_lines, n_lines), q2_hat.view(n_lines, n_lines))
 
-    def make_animation(self, file_name, duration, fps):
+    def make_animation(self, theta_anim_path, duration, fps):
         
         """
         Takes file_name (including filetype) and generates an animation which shows how
@@ -80,7 +80,6 @@ class theta_plotter:
 
         interval = int(1000/fps)
         frames = int(1000*duration/interval)
-        output_path = "Plotting/Plots/" + file_name
 
 
 
@@ -160,14 +159,11 @@ class theta_plotter:
 
         # Save the animation as MP4
         print("Creating animation. This may take about a minute")
-        ani.save(output_path, writer="ffmpeg", dpi=300, bitrate=-1)
-        print("Animation saved to:", output_path)
+        ani.save(theta_anim_path, writer="ffmpeg", dpi=300, bitrate=-1)
+        print("Animation saved to:", theta_anim_path)
         plt.close(fig)
 
-    def make_figure(self, file_name):
-
-        # Set the output path
-        output_path = "Plotting/Plots/" + file_name
+    def make_figure(self, theta_figure_path):
 
         # Create the figure with corrected settings
         fig, ax = plt.subplots(figsize=(10, 6))
@@ -186,7 +182,7 @@ class theta_plotter:
                 
 
         # Save the figure
-        plt.savefig(output_path, dpi=400, bbox_inches='tight', pad_inches=0)
+        plt.savefig(theta_figure_path, dpi=400, bbox_inches='tight', pad_inches=0)
         plt.show(fig)
         plt.close(fig)
 
