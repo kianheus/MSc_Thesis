@@ -43,6 +43,15 @@ def dynamical_matrices(rp: dict, q: Tensor, q_d: Tensor) -> Tuple[Tensor, Tensor
 
     return M_q, C_q, G_q 
 
+def add_spring_force_G_q(rp: dict, q: Tensor, G_q, k_spring):
+
+    K_q = torch.tensor([[k_spring, -k_spring], 
+                        [-k_spring, k_spring]]).to(device)
+    
+    G_q += K_q @ q.T
+
+    return G_q
+
 
 def input_matrix(rp: dict, q: Tensor) -> Tensor:
 
