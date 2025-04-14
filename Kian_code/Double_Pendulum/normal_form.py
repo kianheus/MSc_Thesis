@@ -2,7 +2,18 @@ import torch
 
 
 def calculate_Y(th, th_d, M_th, C_th, G_th, device):
-    
+
+    """
+    dM00dth = torch.autograd.grad(M_th[0,0], th, create_graph=True)[0]
+    dM01dth = torch.autograd.grad(M_th[0,1], th, create_graph=True)[0]
+    dM10dth = torch.autograd.grad(M_th[1,0], th, create_graph=True)[0]
+    dM11dth = torch.autograd.grad(M_th[1,1], th, create_graph=True)[0]
+    print(dM00dth)
+    print(dM01dth)
+    print(dM10dth)
+    print(dM11dth)    
+    """
+
     M, C, G = M_th, C_th, G_th
   
     M0 = M[0,0]
