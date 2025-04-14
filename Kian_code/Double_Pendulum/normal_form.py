@@ -17,28 +17,14 @@ def calculate_Y(th, th_d, M_th, C_th, G_th, device):
     G1 = G[1]
 
 	
-    dM0dth0 = torch.autograd.grad(M0, th, create_graph=True)[0][0,0]
     dM1dth1 = torch.autograd.grad(M1, th, create_graph=True)[0][0,1]
     ddM1ddth1 = torch.autograd.grad(dM1dth1, th, create_graph=True)[0][0,1]
-    dddM1dddth1 = torch.autograd.grad(ddM1ddth1, th, create_graph=True)[0][0,1]
     dG1dth0 = torch.autograd.grad(G1, th, create_graph=True)[0][0,0]
     dG1dth1 = torch.autograd.grad(G1, th, create_graph=True)[0][0,1]
-    ddG1ddth0 = torch.autograd.grad(dG1dth0, th, create_graph=True)[0][0,0]
-    ddG1dth0dth1 = torch.autograd.grad(dG1dth0, th, create_graph=True)[0][0,1]
-    ddG1ddth1 = torch.autograd.grad(dG1dth1, th, create_graph=True)[0][0,1]
     
-    print("\n")
-    print("dM0dth0:", dM0dth0)
-    print("dM1dth1", dM1dth1)
-    print("ddM1ddth1", ddM1ddth1)
-    print("dddM1dddth1", dddM1dddth1)
-    print("dG1dth0", dG1dth0)
-    print("dG1dth1", dG1dth1)
-    print("ddG1ddth0", ddG1ddth0)
-    print("ddG1dth0dth1", ddG1dth0dth1)
-    print("ddG1ddth1", ddG1ddth1)
-    print("\n")
 
+
+    #THIS CALCULATION HAS BEEN VERIFIED ANALYTICALLY WITH WOLFRAM MATHEMATICA
     y = th[0,1]
     y_i = th_d[0,1]
     y_ii = 1/M1 * (-C1 * th_d[0,1] - G1)
