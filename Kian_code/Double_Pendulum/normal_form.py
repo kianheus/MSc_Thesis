@@ -139,7 +139,7 @@ def calculate_alpha_beta_alt(th, th_d, M_th, C_th, G_th, A_th, Y):
 
 def calculate_v(Y, Y_des, K):
     
-    v = torch.matmul(K, Y-Y_des)
+    v = torch.matmul(K, Y_des - Y)
 
     return v
 
