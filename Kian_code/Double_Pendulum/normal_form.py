@@ -156,17 +156,3 @@ def calculate_y_iv(alpha, beta, u):
     y_iv = alpha + beta * u
 
     return y_iv
-
-
-    """
-    y_iv = 1/(M1**3) * (dM1dth1**3 * th_d[1]**4 + 2 * G1 * dM1dth1**2 * th_d[1]**2) + \
-           1/(M1**2) * (ddM1ddth1 * dM1dth1 * th_d[1]**3 + 3/2 * dM1dth1 ** 2 * th_d[1]**2 * y_ii +
-                        dG1dth0 * dM1dth1 * th_d[0] * th_d[1] + dG1dth1 * dM1dth1 * th_d[1]**2 + 
-                        G1 * ddM1ddth1 * th_d[1]**2 + G1 * dM1dth1 * y_ii) + \
-           (dM1dth1 * th_d[1])/(M1**2) * (1/2 * ddM1ddth1 * th_d[1]**3 + dM1dth1 * th_d[1] * y_ii + 
-                                          dG1dth0 * th_d[0] + dG1dth1 * th_d[1]) - \
-           1/M1 * (1/2 * dddM1dddth1 * th_d[1]**4 + 5/2 * ddM1ddth1 * th_d[1]**2 * y_ii +
-                   dM1dth1 * y_ii**2 + dM1dth1 * th_d[1] * y_iii + 
-                   ddG1ddth0 * th_d[0]**2 + ddG1dth0dth1 * th_d[0] * th_d[1] + dG1dth0 * th_dd0 + 
-                   ddG1dth0dth1 * th_d[0] * th_d[1] + ddG1ddth1 * th_d[1]**2 + dG1dth1 * y_ii)
-    """
