@@ -67,7 +67,7 @@ def calculate_alpha_beta(th, th_d, M_th, C_th, G_th, A_th, Y):
     ddG1dth0dth1 = torch.autograd.grad(dG1dth0, th, create_graph=True)[0][0,1]
     ddG1ddth1 = torch.autograd.grad(dG1dth1, th, create_graph=True)[0][0,1]
 
-    alpha = 1/(M1**3) * (dM1dth1**3 * th_d[0,1]**4 + 2 * G1 * dM1dth1**2 * th_d[0,1]**2) + \
+    alpha = 1/(M1**3) * (dM1dth1*ddM1ddth1 * th_d[0,1]**4 + 2 * G1 * dM1dth1**2 * th_d[0,1]**2) + \
            1/(M1**2) * (ddM1ddth1 * dM1dth1 * th_d[0,1]**3 + 3/2 * dM1dth1 ** 2 * th_d[0,1]**2 * y_ii +
                         dG1dth0 * dM1dth1 * th_d[0,0] * th_d[0,1] + dG1dth1 * dM1dth1 * th_d[0,1]**2 + 
                         G1 * ddM1ddth1 * th_d[0,1]**2 + G1 * dM1dth1 * y_ii) + \
