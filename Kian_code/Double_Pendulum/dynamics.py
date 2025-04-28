@@ -6,6 +6,7 @@ import numpy as np
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 def dynamical_matrices(rp: dict, q: Tensor, q_d: Tensor) -> Tuple[Tensor, Tensor, Tensor]:
+
     """
     Computes the dynamical matrices in the equation
     M_q @ q_dd + C_q @ q_d + G_q = tau_q
@@ -43,7 +44,11 @@ def dynamical_matrices(rp: dict, q: Tensor, q_d: Tensor) -> Tuple[Tensor, Tensor
 
     return M_q, C_q, G_q 
 
-def add_spring_force_G_q(rp: dict, q: Tensor, G_q, k_spring):
+def add_spring_force_G_q(rp: dict, q: Tensor, G_q, k_spring: float) -> Tensor:
+
+    """
+    Adds spring force to the potential matrix based on spring constant k_spring.
+    """
 
     K_q = torch.tensor([[-k_spring, k_spring], 
                         [k_spring, -k_spring]]).to(device)
@@ -79,7 +84,8 @@ def input_matrix(rp: dict, q: Tensor) -> Tensor:
 def jacobian(rp: dict, q: Tensor) -> Tensor:
 
     """
-    Computes the forward Jacobian (analytically) as
+    Computes the forward Jacobian of the analytic transform
+    th = h(q) with th the partial inertial and input decoupling coordinates. 
     Jh = d(q)/d(t)
     """
 
