@@ -1,20 +1,10 @@
 import torch
 
 
-def calculate_Y(th, th_d, M_th, C_th, G_th, device):
+def calculate_Y(th, th_d, M_th, G_th, device):
 
-    """
-    dM00dth = torch.autograd.grad(M_th[0,0], th, create_graph=True)[0]
-    dM01dth = torch.autograd.grad(M_th[0,1], th, create_graph=True)[0]
-    dM10dth = torch.autograd.grad(M_th[1,0], th, create_graph=True)[0]
-    dM11dth = torch.autograd.grad(M_th[1,1], th, create_graph=True)[0]
-    print(dM00dth)
-    print(dM01dth)
-    print(dM10dth)
-    print(dM11dth)    
-    """
 
-    M, C, G = M_th, C_th, G_th
+    M, G = M_th, G_th
   
     M0 = M[0,0]
     M1 = M[1,1]
@@ -32,6 +22,18 @@ def calculate_Y(th, th_d, M_th, C_th, G_th, device):
     ddM1ddth1 = torch.autograd.grad(dM1dth1, th, create_graph=True)[0][0,1]
     dG1dth0 = torch.autograd.grad(G1, th, create_graph=True)[0][0,0]
     dG1dth1 = torch.autograd.grad(G1, th, create_graph=True)[0][0,1]
+
+    if False:
+        print("dM1dth1:", dM1dth1)
+        print("ddM1ddth1:", ddM1ddth1)
+        print("dG1dth0:", dG1dth0)
+        print("dG1dth1:", dG1dth1)
+        print("C0:", C0)
+        print("C1:", C1)
+        print("G0:", G0)
+        print("G1:", G1)
+        print("M0:", M0)
+        print("M1:", M1)
     
 
 
@@ -41,6 +43,15 @@ def calculate_Y(th, th_d, M_th, C_th, G_th, device):
     y_ii = 1/M1 * (-C1 * th_d[0,1] - G1)
     y_iii = 1/(M1**2) * (1/2 * dM1dth1**2 * th_d[0,1]**3 + G1 * dM1dth1 * th_d[0,1]) - \
             1/M1 * (1/2 * ddM1ddth1 * th_d[0,1]**3 + dM1dth1 * th_d[0,1] * y_ii + dG1dth0 * th_d[0,0] + dG1dth1 * th_d[0,1])
+    
+    if False:
+        print(y_iii)
+        print(G1)
+        print(ddM1ddth1)
+        print(y_ii)
+        print(dG1dth0)
+        print(dG1dth1)
+
 
     Y = torch.tensor([[y],
                       [y_i],
@@ -49,10 +60,15 @@ def calculate_Y(th, th_d, M_th, C_th, G_th, device):
     
     return Y
 
+def calculate_Y_inverse(Y, M_th, C0, C1, G0, G1, device):
 
-def calculate_alpha_beta(th, th_d, M_th, C_th, G_th, A_th, Y):
+    th1 = Y[0,0]
+    th1_d = Y[1,0]
+    
 
-    M, C, G, A = M_th, C_th, G_th, A_th
+def calculate_alpha_beta(th, th_d, M_th, G_th, A_th, Y):
+
+    M, G, A = M_th, G_th, A_th
 
     y_ii = Y[2, 0]
     y_iii = Y[3, 0]
@@ -78,17 +94,19 @@ def calculate_alpha_beta(th, th_d, M_th, C_th, G_th, A_th, Y):
     ddG1dth0dth1 = torch.autograd.grad(dG1dth0, th, create_graph=True)[0][0,1]
     ddG1ddth1 = torch.autograd.grad(dG1dth1, th, create_graph=True)[0][0,1]
 
-    print("dM0dthfull:", torch.autograd.grad(M0, th, create_graph=True)[0])
-    print("dM1dthfull:", torch.autograd.grad(M1, th, create_graph=True)[0])
-    print("dM0dth0:", dM0dth0)
-    print("dM1dth1:", dM1dth1)
-    print("ddM1ddth1:", ddM1ddth1)
-    print("dddM1dddth1:", dddM1dddth1)
-    print("dG1dth0:", dG1dth0)
-    print("dG1dth1:", dG1dth1)
-    print("ddG1ddth0:", ddG1ddth0)
-    print("ddG1dth0dth1:", ddG1dth0dth1)
-    print("ddG1ddth1:", ddG1ddth1)
+    if False:
+        print("dM0dthfull:", torch.autograd.grad(M0, th, create_graph=True)[0])
+        print("dM1dthfull:", torch.autograd.grad(M1, th, create_graph=True)[0])
+        print("dM0dth0:", dM0dth0)
+        print("dM1dth1:", dM1dth1)
+        print("ddM1ddth1:", ddM1ddth1)
+        print("dddM1dddth1:", dddM1dddth1)
+        print("dG1dth0:", dG1dth0)
+        print("dG1dth1:", dG1dth1)
+        print("ddG1ddth0:", ddG1ddth0)
+        print("ddG1dth0dth1:", ddG1dth0dth1)
+        print("ddG1ddth1:", ddG1ddth1)
+    
 
     AA = M1**(-2)
     BB = 1/2 * th_d[0,1]**3 * dM1dth1**2
