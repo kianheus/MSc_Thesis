@@ -26,7 +26,12 @@ def transform_dynamical_from_inverse(M_q: Tensor, C_q: Tensor, G_q: Tensor, thet
     
     return M_th, C_th, G_th
 
-def transform_input_matrix_from_inverse_trans(A_q: Tensor, J_h_inv_trans: Tensor, device: torch.device) -> Tensor:
+def transform_input_matrix_from_inverse_trans(A_q: Tensor, J_h_inv_trans: Tensor) -> Tensor:
+
+    """
+    Similarly to the calculation of G_th in the function above, the input matrix is calculated as:
+    A_th = Jh^-T @ A_q
+    """
 
     A_th = J_h_inv_trans @ A_q
 
