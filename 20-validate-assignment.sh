@@ -1,1 +1,0 @@
-AUTOGRADING=true JAX_PLATFORMS=cpu nbgrader validate assignment/**/**.ipynb
