@@ -38,36 +38,46 @@ def transform_input_matrix_from_inverse_trans(A_q: Tensor, J_h_inv_trans: Tensor
     return A_th
 
 
-def analytic_theta_1(rp: dict, q: Tensor) -> Tensor:
+def analytic_theta_0(rp: dict, q: Tensor) -> Tensor:
     
-    # h1 is defined as the length between the actuator attachment point and the mass of the double pendulum
+    """
+    th0 is defined as the length between the actuator attachment point ("xa", "ya") and 
+    the end-point of the double pendulum. This results in input decoupling.
+    """
+
     
     Rx = rp["xa"] - rp["l1"] * torch.cos(q[0]) - rp["l2"] * torch.cos(q[1])
     Ry = rp["ya"] - rp["l1"] * torch.sin(q[0]) - rp["l2"] * torch.sin(q[1])
     
-    th1 = torch.sqrt(Rx**2 + Ry**2)
+    th0 = torch.sqrt(Rx**2 + Ry**2)
     
-    return th1
+    return th0
     
     
-def analytic_theta_2(rp: dict, q: Tensor) -> Tensor:
+def analytic_theta_1(rp: dict, q: Tensor) -> Tensor:
     
-    # h2 is defined as the arctan between the vector from mass of double pendulum 
-    # to the actuator point. 
-    # This was Cosimo's hunch, and has been verified in the Mathematica code
-    
+    """
+    th1 is defined as the arctangent between the vector from the double pendulum end-point to 
+    the actuator attachment point. This results in partial inertial decoupling. 
+    """
+
     Rx = rp["xa"] - rp["l1"] * torch.cos(q[0]) - rp["l2"] * torch.cos(q[1])
     Ry = rp["ya"] - rp["l1"] * torch.sin(q[0]) - rp["l2"] * torch.sin(q[1])    
     
-    th2 = torch.atan2(Ry,Rx)
+    th1 = torch.atan2(Ry,Rx)
     
-    return th2
+    return th1
 
 def analytic_theta(rp:dict, q: Tensor) -> Tensor:
-    th1 = analytic_theta_1(rp, q)
-    th2 = analytic_theta_2(rp, q)
 
-    th = torch.stack([th1, th2], dim=-1)
+    """
+    Combines the individual coordinates into a single set of coordinates. 
+    """
+
+    th0 = analytic_theta_0(rp, q)
+    th1 = analytic_theta_1(rp, q)
+
+    th = torch.stack([th0, th1], dim=-1)
 
     return th
 

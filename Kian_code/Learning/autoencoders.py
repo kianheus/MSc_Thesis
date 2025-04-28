@@ -33,14 +33,14 @@ class Autoencoder_double(nn.Module):
         
         self.rp = rp
         
+    def encoder_theta_0_ana(self, q):
+        theta_0 = transforms.analytic_theta_0(self.rp, q).unsqueeze(0)
+        return theta_0, theta_0
+    
+    #This function is not used in the forward pass, but is useful for comparing learned to analytic theta_2
     def encoder_theta_1_ana(self, q):
         theta_1 = transforms.analytic_theta_1(self.rp, q).unsqueeze(0)
         return theta_1, theta_1
-    
-    #This function is not used in the forward pass, but is useful for comparing learned to analytic theta_2
-    def encoder_theta_2_ana(self, q):
-        theta_2 = transforms.analytic_theta_2(self.rp, q).unsqueeze(0)
-        return theta_2, theta_2
     
     def theta_ana(self, q):
         theta_ana = torch.vmap(transforms.analytic_theta, in_dims=(None, 0))(self.rp, q)
@@ -118,14 +118,14 @@ class Analytic_transformer():
         q_ccw, q_cw = transforms.analytic_inverse(self.rp, theta)
         return q_ccw
     
-    def encoder_theta_1_ana(self, q):
-        theta_1 = transforms.analytic_theta_1(self.rp, q).unsqueeze(0)
-        return theta_1, theta_1
+    def encoder_theta_0_ana(self, q):
+        theta_0 = transforms.analytic_theta_0(self.rp, q).unsqueeze(0)
+        return theta_0, theta_0
     
     #This function is not used in the forward pass, but is useful for comparing learned to analytic theta_2
     def encoder_theta_2_ana(self, q):
-        theta_2 = transforms.analytic_theta_2(self.rp, q).unsqueeze(0)
-        return theta_2, theta_2
+        theta_1 = transforms.analytic_theta_1(self.rp, q).unsqueeze(0)
+        return theta_1, theta_1
     
     def theta_ana(self, q):
         theta_ana = torch.vmap(transforms.analytic_theta, in_dims=(None, 0))(self.rp, q)
