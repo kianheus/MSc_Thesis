@@ -8,7 +8,20 @@ def transform_dynamical_from_inverse(M_q: Tensor, C_q: Tensor, G_q: Tensor, thet
                                      J_h_inv: Tensor, J_h_inv_trans: Tensor) -> Tuple[Tensor, Tensor, Tensor]:
 
 
-    # @ performs batched matrix multiplication on the terms
+    """
+    Transforms dynamical matrices based on the inverse jacobian (Jh^-1) and inverse transpose jacobian (Jh^-T)
+
+    1) The mass matrix transform follows from conservation of energy and can be written as:
+    M_th = Jh^-T @ M_q @ Jh^-1
+
+    2) The Coriolis & Centrifugal matrix follows from the condition that [M' - 2C] be skew-symmetric. 
+    An example calculation can be found in https://arxiv.org/pdf/2010.01033:
+    C_th = SUM(Gamma_ijk(q) * q_dot)
+    Where Gamma_ijk(q) are the Christoffel symbols of the first kind.
+
+    3) The potential matrix can be calculated based on virtual work as:
+    G_th = Jh^-T @ G_q
+    """
 
     M_th = J_h_inv_trans @ M_q @ J_h_inv
 
@@ -132,6 +145,11 @@ def analytic_inverse(rp: dict, th: Tensor) -> Tuple:
 
 def forward_kinematics(rp, q):
 
+    """
+    Computes the end-effector and elbow position of the robot. 
+    Mostly used for plotting. 
+    """
+
     x_end = rp["l1"] * torch.cos(q[0]) + rp["l2"] * torch.cos(q[1])
     y_end = rp["l1"] * torch.sin(q[0]) + rp["l2"] * torch.sin(q[1])
 
@@ -145,6 +163,12 @@ def forward_kinematics(rp, q):
     return pos_end, pos_elbow
 
 def inverse_kinematics(pos, rp, is_clockwise):
+
+    """
+    Calculates the joint angles based on end-effector position.
+    Returns a set of angles based on is_clockwise Boolean.
+    """
+
     xend = pos[0]
     yend = pos[1]
 
@@ -187,9 +211,22 @@ def inverse_kinematics(pos, rp, is_clockwise):
 
 
 def wrap_to_pi(q):
+
+    """
+    Returns a tensor with elements wrapped between -pi and pi.
+    """
+
     return (q + torch.pi) % (2 * torch.pi) - torch.pi
 
 def shift_q(q, clockwise = False):
+
+    """
+    Shifts points to make a distribution unimodal. 
+    On a range of (-pi, pi) for both (q0, q1), a full range of clockwise 
+    configurations is bimodal (and similarly for counter-clockwise). 
+    This function shifts one of the sets to connect it to the other. 
+    """                 
+
     with torch.no_grad():
         if clockwise:
             shift_mask = (q[:, 0] < 0) & (q[:, 1] > 0)
