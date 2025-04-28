@@ -14,7 +14,7 @@ def x_func(rp: dict, q: Tensor) -> Tensor:
     
     # x position of the end effector
     
-    x = rp["l1"] * torch.cos(q[0]) + rp["l2"] * torch.cos(q[1])
+    x = rp["l0"] * torch.cos(q[0]) + rp["l1"] * torch.cos(q[1])
     
     return x
     
@@ -23,7 +23,7 @@ def y_func(rp: dict, q: Tensor) -> Tensor:
     
     # y position of the end effector
     
-    y = rp["l1"] * torch.sin(q[0]) + rp["l2"] * torch.sin(q[1])
+    y = rp["l0"] * torch.sin(q[0]) + rp["l1"] * torch.sin(q[1])
     
     return y
 

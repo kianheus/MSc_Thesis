@@ -9,7 +9,7 @@ class Anim_plotter():
 
     def __init__(self, rp):
         self.rp = rp
-        self.robot_range = 1.2 * (self.rp["l1"] + self.rp["l2"])
+        self.robot_range = 1.2 * (self.rp["l0"] + self.rp["l1"])
 
         
 
@@ -61,9 +61,9 @@ class Anim_plotter():
             dt (float): Time step between frames.
         """
 
-        r_outer = self.rp["l1"] + self.rp["l2"]
-        if self.rp["l1"] != self.rp["l2"]:
-            r_inner = abs(self.rp["l1"] - self.rp["l2"])
+        r_outer = self.rp["l0"] + self.rp["l1"]
+        if self.rp["l0"] != self.rp["l1"]:
+            r_inner = abs(self.rp["l0"] - self.rp["l1"])
         else:
             r_inner = None
 

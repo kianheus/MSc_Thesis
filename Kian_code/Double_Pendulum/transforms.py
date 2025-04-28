@@ -59,8 +59,8 @@ def analytic_theta_0(rp: dict, q: Tensor) -> Tensor:
     """
 
     
-    Rx = rp["xa"] - rp["l1"] * torch.cos(q[0]) - rp["l2"] * torch.cos(q[1])
-    Ry = rp["ya"] - rp["l1"] * torch.sin(q[0]) - rp["l2"] * torch.sin(q[1])
+    Rx = rp["xa"] - rp["l0"] * torch.cos(q[0]) - rp["l1"] * torch.cos(q[1])
+    Ry = rp["ya"] - rp["l0"] * torch.sin(q[0]) - rp["l1"] * torch.sin(q[1])
     
     th0 = torch.sqrt(Rx**2 + Ry**2)
     
@@ -74,8 +74,8 @@ def analytic_theta_1(rp: dict, q: Tensor) -> Tensor:
     the actuator attachment point. This results in partial inertial decoupling. 
     """
 
-    Rx = rp["xa"] - rp["l1"] * torch.cos(q[0]) - rp["l2"] * torch.cos(q[1])
-    Ry = rp["ya"] - rp["l1"] * torch.sin(q[0]) - rp["l2"] * torch.sin(q[1])    
+    Rx = rp["xa"] - rp["l0"] * torch.cos(q[0]) - rp["l1"] * torch.cos(q[1])
+    Ry = rp["ya"] - rp["l0"] * torch.sin(q[0]) - rp["l1"] * torch.sin(q[1])    
     
     th1 = torch.atan2(Ry,Rx)
     
@@ -110,8 +110,8 @@ def analytic_inverse(rp: dict, th: Tensor) -> Tuple:
     yend = rp["ya"] - th[0]*torch.sin(th[1])
 
     # Calculate the inside angle of the two joints, used to determine q1. 
-    numerator = (xend**2 + yend**2 - rp["l1"]**2 - rp["l2"]**2)
-    denominator = torch.tensor(2*rp["l1"]*rp["l2"])
+    numerator = (xend**2 + yend**2 - rp["l0"]**2 - rp["l1"]**2)
+    denominator = torch.tensor(2*rp["l0"]*rp["l1"])
     fraction = numerator/denominator
     
     epsilon = 1e-6
@@ -120,11 +120,11 @@ def analytic_inverse(rp: dict, th: Tensor) -> Tuple:
     beta = torch.arccos(fraction)
 
     # Determine primary angles.
-    q0 = torch.atan2(yend, xend + epsilon) - torch.atan2(rp["l2"]*torch.sin(beta), epsilon + rp["l1"] + rp["l2"]*torch.cos(beta))
+    q0 = torch.atan2(yend, xend + epsilon) - torch.atan2(rp["l1"]*torch.sin(beta), epsilon + rp["l0"] + rp["l1"]*torch.cos(beta))
     q1 = q0 + beta
 
     # Determine secondary angles.
-    q0_alt = torch.atan2(yend, xend) + torch.atan2(rp["l2"]*torch.sin(beta), epsilon + rp["l1"] + rp["l2"]*torch.cos(beta))
+    q0_alt = torch.atan2(yend, xend) + torch.atan2(rp["l1"]*torch.sin(beta), epsilon + rp["l0"] + rp["l1"]*torch.cos(beta))
     q1_alt = q0_alt - beta 
 
     # Normalize values between -pi and pi.
@@ -150,13 +150,13 @@ def forward_kinematics(rp, q):
     Mostly used for plotting. 
     """
 
-    x_end = rp["l1"] * torch.cos(q[0]) + rp["l2"] * torch.cos(q[1])
-    y_end = rp["l1"] * torch.sin(q[0]) + rp["l2"] * torch.sin(q[1])
+    x_end = rp["l0"] * torch.cos(q[0]) + rp["l1"] * torch.cos(q[1])
+    y_end = rp["l0"] * torch.sin(q[0]) + rp["l1"] * torch.sin(q[1])
 
     pos_end = torch.stack([x_end, y_end], dim=-1)
 
-    x_elbow = rp["l1"] * torch.cos(q[0])
-    y_elbow = rp["l1"] * torch.sin(q[0])
+    x_elbow = rp["l0"] * torch.cos(q[0])
+    y_elbow = rp["l0"] * torch.sin(q[0])
 
     pos_elbow = torch.stack([x_elbow, y_elbow], dim=-1)
 
@@ -172,18 +172,18 @@ def inverse_kinematics(pos, rp, is_clockwise):
     xend = pos[0]
     yend = pos[1]
 
-    numerator = (xend**2 + yend**2 - rp["l1"]**2 - rp["l2"]**2)
-    denominator = torch.tensor(2*rp["l1"]*rp["l2"])
+    numerator = (xend**2 + yend**2 - rp["l0"]**2 - rp["l1"]**2)
+    denominator = torch.tensor(2*rp["l0"]*rp["l1"])
     fraction = numerator/denominator
 
     beta = torch.arccos(fraction)
 
     # Determine primary angles.
-    q0 = torch.atan2(yend, xend) - torch.atan2(rp["l2"]*torch.sin(beta), rp["l1"] + rp["l2"]*torch.cos(beta))
+    q0 = torch.atan2(yend, xend) - torch.atan2(rp["l1"]*torch.sin(beta), rp["l0"] + rp["l1"]*torch.cos(beta))
     q1 = q0 + beta
 
     # Determine secondary angles.
-    q0_alt = torch.atan2(yend, xend) + torch.atan2(rp["l2"]*torch.sin(beta), rp["l1"] + rp["l2"]*torch.cos(beta))
+    q0_alt = torch.atan2(yend, xend) + torch.atan2(rp["l1"]*torch.sin(beta), rp["l0"] + rp["l1"]*torch.cos(beta))
     q1_alt = q1_alt - beta 
 
     if torch.isnan(q0) or torch.isnan(q1) or torch.isnan(q0_alt) or torch.isnan(q1_alt):

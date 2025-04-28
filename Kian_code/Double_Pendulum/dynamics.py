@@ -26,19 +26,19 @@ def dynamical_matrices(rp: dict, q: Tensor, q_d: Tensor) -> Tuple[Tensor, Tensor
     s01 = torch.sin(q[0]-q[1]).unsqueeze(0)
     c01 = torch.cos(q[0]-q[1]).unsqueeze(0)
     
-    M_q_00 = torch.tensor([rp["l1"]**2 * (rp["m1"] + rp["m2"])]).to(device) 
-    M_q_0 = torch.cat((M_q_00, (rp["l1"] * rp["l2"] * rp["m2"] * c01).to(device)), dim = 0).unsqueeze(0)
-    M_q_11 = torch.tensor([rp["l2"]**2 * rp["m2"]]).to(device) 
-    M_q_1 = torch.cat(((rp["l1"] * rp["l2"] * rp["m2"] * c01).to(device), M_q_11), dim = 0).unsqueeze(0)
+    M_q_00 = torch.tensor([rp["l0"]**2 * (rp["m0"] + rp["m1"])]).to(device) 
+    M_q_0 = torch.cat((M_q_00, (rp["l0"] * rp["l1"] * rp["m1"] * c01).to(device)), dim = 0).unsqueeze(0)
+    M_q_11 = torch.tensor([rp["l1"]**2 * rp["m1"]]).to(device) 
+    M_q_1 = torch.cat(((rp["l0"] * rp["l1"] * rp["m1"] * c01).to(device), M_q_11), dim = 0).unsqueeze(0)
     M_q = torch.cat((M_q_0, M_q_1), dim = 0)
         
     C_q_00 = torch.tensor([0]).to(device) 
-    C_q_0 = torch.cat((C_q_00, (rp["l1"] * rp["l2"] * rp["m2"] * q_d[1] * s01).to(device)), dim=0).unsqueeze(0)
-    C_q_1 = torch.cat(((-rp["l1"] * rp["l2"] * rp["m2"] * q_d[0] * s01).to(device), C_q_00), dim=0).unsqueeze(0)
+    C_q_0 = torch.cat((C_q_00, (rp["l0"] * rp["l1"] * rp["m1"] * q_d[1] * s01).to(device)), dim=0).unsqueeze(0)
+    C_q_1 = torch.cat(((-rp["l0"] * rp["l1"] * rp["m1"] * q_d[0] * s01).to(device), C_q_00), dim=0).unsqueeze(0)
     C_q = torch.cat((C_q_0, C_q_1), dim = 0)
     
-    G_q_0 = torch.tensor([rp["g"] * rp["l1"] * (rp["m1"] + rp["m2"])]).unsqueeze(0).to(device)  * c0.to(device)
-    G_q_1 = torch.tensor([rp["g"] * rp["l2"] * rp["m2"]]).unsqueeze(0).to(device)  * c1.to(device)
+    G_q_0 = torch.tensor([rp["g"] * rp["l0"] * (rp["m0"] + rp["m1"])]).unsqueeze(0).to(device)  * c0.to(device)
+    G_q_1 = torch.tensor([rp["g"] * rp["l1"] * rp["m1"]]).unsqueeze(0).to(device)  * c1.to(device)
     G_q = torch.cat((G_q_0, G_q_1), dim = 0)
 
 
@@ -71,11 +71,11 @@ def input_matrix(rp: dict, q: Tensor) -> Tensor:
         A_q: input matrix of shape (2, )   
     """
 
-    Rx = rp["xa"] - rp["l1"] * torch.cos(q[0]) - rp["l2"] * torch.cos(q[1])
-    Ry = rp["ya"] - rp["l1"] * torch.sin(q[0]) - rp["l2"] * torch.sin(q[1])
+    Rx = rp["xa"] - rp["l0"] * torch.cos(q[0]) - rp["l1"] * torch.cos(q[1])
+    Ry = rp["ya"] - rp["l0"] * torch.sin(q[0]) - rp["l1"] * torch.sin(q[1])
 
-    A_q0 = ( (rp["l1"] * torch.sin(q[0]) * Rx - rp["l1"] * torch.cos(q[0]) * Ry) / torch.sqrt(Rx**2 + Ry**2) ).unsqueeze(0).unsqueeze(0)
-    A_q1 = ( (rp["l2"] * torch.sin(q[1]) * Rx - rp["l2"] * torch.cos(q[1]) * Ry) / torch.sqrt(Rx**2 + Ry**2) ).unsqueeze(0).unsqueeze(0)
+    A_q0 = ( (rp["l0"] * torch.sin(q[0]) * Rx - rp["l0"] * torch.cos(q[0]) * Ry) / torch.sqrt(Rx**2 + Ry**2) ).unsqueeze(0).unsqueeze(0)
+    A_q1 = ( (rp["l1"] * torch.sin(q[1]) * Rx - rp["l1"] * torch.cos(q[1]) * Ry) / torch.sqrt(Rx**2 + Ry**2) ).unsqueeze(0).unsqueeze(0)
     A_q = torch.cat((A_q0, A_q1), dim = 0)
 
     return A_q
@@ -89,8 +89,8 @@ def jacobian(rp: dict, q: Tensor) -> Tensor:
     Jh = d(q)/d(t)
     """
 
-    Rx = rp["xa"] - rp["l1"] * torch.cos(q[0]) - rp["l2"] * torch.cos(q[1])
-    Ry = rp["ya"] - rp["l1"] * torch.sin(q[0]) - rp["l2"] * torch.sin(q[1])
+    Rx = rp["xa"] - rp["l0"] * torch.cos(q[0]) - rp["l1"] * torch.cos(q[1])
+    Ry = rp["ya"] - rp["l0"] * torch.sin(q[0]) - rp["l1"] * torch.sin(q[1])
 
     l = torch.sqrt(Rx**2 + Ry**2)
     alpha = torch.atan2(Ry, Rx)
