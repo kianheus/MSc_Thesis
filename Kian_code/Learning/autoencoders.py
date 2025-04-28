@@ -37,7 +37,7 @@ class Autoencoder_double(nn.Module):
         theta_0 = transforms.analytic_theta_0(self.rp, q).unsqueeze(0)
         return theta_0, theta_0
     
-    #This function is not used in the forward pass, but is useful for comparing learned to analytic theta_2
+    #This function is not used in the forward pass, but is useful for comparing learned to analytic theta_1
     def encoder_theta_1_ana(self, q):
         theta_1 = transforms.analytic_theta_1(self.rp, q).unsqueeze(0)
         return theta_1, theta_1
@@ -122,7 +122,7 @@ class Analytic_transformer():
         theta_0 = transforms.analytic_theta_0(self.rp, q).unsqueeze(0)
         return theta_0, theta_0
     
-    #This function is not used in the forward pass, but is useful for comparing learned to analytic theta_2
+    #This function is not used in the forward pass, but is useful for comparing learned to analytic theta_1
     def encoder_theta_2_ana(self, q):
         theta_1 = transforms.analytic_theta_1(self.rp, q).unsqueeze(0)
         return theta_1, theta_1

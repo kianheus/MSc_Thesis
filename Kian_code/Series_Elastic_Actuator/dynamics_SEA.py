@@ -19,14 +19,13 @@ def dynamical_matrices(rp: dict, q: Tensor, q_d: Tensor) -> Tuple[Tensor, Tensor
         G_q: gravitational matrix of shape (2, 2)     
     """
     
-    M_q_11 = torch.tensor([rp["l1"]**2 * (rp["m1"] + rp["m2"])]).to(device) 
-    M_q_1 = torch.cat((rp["I0"] + rp["I1"], rp["I1"]), dim = 0).unsqueeze(0)
-    M_q_2 = torch.cat((rp["I1"], rp["I1"]), dim = 0).unsqueeze(0)
-    M_q = torch.cat((M_q_1, M_q_2), dim = 0)
+    M_q_0 = torch.cat((rp["I0"] + rp["I1"], rp["I1"]), dim = 0).unsqueeze(0)
+    M_q_1 = torch.cat((rp["I1"], rp["I1"]), dim = 0).unsqueeze(0)
+    M_q = torch.cat((M_q_0, M_q_1), dim = 0)
 
-    G_q_1 = torch.cat((0., 0.), dim = 0).unsqueeze(0)
-    G_q_2 = torch.cat((0., rp["k"]), dim = 0).unsqueeze(0)
-    G_q = torch.cat((G_q_1, G_q_2), dim = 0)
+    G_q_0 = torch.cat((0., 0.), dim = 0).unsqueeze(0)
+    G_q_1 = torch.cat((0., rp["k"]), dim = 0).unsqueeze(0)
+    G_q = torch.cat((G_q_0, G_q_1), dim = 0)
 
 
     return M_q, G_q 
@@ -57,9 +56,9 @@ def jacobian() -> Tensor:
     Jh = d(q)/d(t)
     """
 
-    J_h_1 = torch.cat((1., 0.), dim = 0).unsqueeze(0)
-    J_h_2 = torch.cat((-1., 1.), dim = 0).unsqueeze(0)
-    J_h = torch.cat((J_h_1, J_h_2), dim = 0)
+    J_h_0 = torch.cat((1., 0.), dim = 0).unsqueeze(0)
+    J_h_1 = torch.cat((-1., 1.), dim = 0).unsqueeze(0)
+    J_h = torch.cat((J_h_0, J_h_1), dim = 0)
 
     
     return J_h

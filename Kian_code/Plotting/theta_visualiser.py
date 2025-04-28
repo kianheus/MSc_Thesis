@@ -34,42 +34,42 @@ class theta_plotter:
 
     def __init__(self, rp, device, n_lines, mapping_functions = (x_func, y_func), mask_split = [-torch.pi/2]):
 
-        # Create n lines of points across q1 and q2 across the training range for visualization
+        # Create n lines of points across q0 and q1 across the training range for visualization
+        q0 = torch.linspace(training_data.q0_low, training_data.q0_high, n_lines)
         q1 = torch.linspace(training_data.q1_low, training_data.q1_high, n_lines)
-        q2 = torch.linspace(training_data.q2_low, training_data.q2_high, n_lines)
 
         # Turn these lines into meshgrids
-        self.q1_grid, self.q2_grid = torch.meshgrid(q1, q2, indexing="ij")
+        self.q0_grid, self.q1_grid = torch.meshgrid(q0, q1, indexing="ij")
 
-        # Apply the slicing condition: keep points where q2 is in [q1, q1 + π]
-        #self.valid_mask = (self.q2_grid >= self.q1_grid) & (self.q2_grid <= self.q1_grid + torch.pi)
+        # Apply the slicing condition: keep points where q1 is in [q0, q0 + π]
+        #self.valid_mask = (self.q1_grid >= self.q0_grid) & (self.q1_grid <= self.q0_grid + torch.pi)
 
         self.colors = ["k"]
 
-        self.valid_mask = ((self.q2_grid >= self.q1_grid) & 
-                        (self.q2_grid <= self.q1_grid + torch.pi) &
-                        (self.q1_grid >= mask_split[0]) & 
-                        (self.q1_grid <= mask_split[1]))
-        self.valid_mask2 = ((self.q2_grid >= self.q1_grid - 2 * torch.pi) & 
-                            (self.q2_grid <= self.q1_grid - torch.pi))
+        self.valid_mask = ((self.q1_grid >= self.q0_grid) & 
+                        (self.q1_grid <= self.q0_grid + torch.pi) &
+                        (self.q0_grid >= mask_split[0]) & 
+                        (self.q0_grid <= mask_split[1]))
+        self.valid_mask2 = ((self.q1_grid >= self.q0_grid - 2 * torch.pi) & 
+                            (self.q1_grid <= self.q0_grid - torch.pi))
         self.always_true_mask = torch.ones_like(self.valid_mask, dtype=torch.bool)
 
 
         # Flatten for easier computation with vmap
-        q_combined = torch.stack((self.q1_grid.flatten(), self.q2_grid.flatten()), dim=-1).to(device)
+        q_combined = torch.stack((self.q0_grid.flatten(), self.q1_grid.flatten()), dim=-1).to(device)
 
         # Calculate coordinate change
-        Theta1 = mapping_functions[0](q_combined).cpu()
-        Theta2 = mapping_functions[1](q_combined).cpu()
-        Theta_combined = torch.stack((Theta1,Theta2), dim=-1)
+        Theta0 = mapping_functions[0](q_combined).cpu()
+        Theta1 = mapping_functions[1](q_combined).cpu()
+        Theta_combined = torch.stack((Theta0,Theta1), dim=-1)
 
-        self.Theta = (Theta1.view(n_lines, n_lines), Theta2.view(n_lines, n_lines))
+        self.Theta = (Theta0.view(n_lines, n_lines), Theta1.view(n_lines, n_lines))
 
         
-        q1_hat = (mapping_functions[2](Theta_combined.to(device))).cpu()
-        q2_hat = (mapping_functions[3](Theta_combined.to(device))).cpu()
+        q0_hat = (mapping_functions[2](Theta_combined.to(device))).cpu()
+        q1_hat = (mapping_functions[3](Theta_combined.to(device))).cpu()
 
-        self.q_hat = (q1_hat.view(n_lines, n_lines), q2_hat.view(n_lines, n_lines))
+        self.q_hat = (q0_hat.view(n_lines, n_lines), q1_hat.view(n_lines, n_lines))
 
     def make_animation(self, theta_anim_path, duration, fps):
         
@@ -101,8 +101,8 @@ class theta_plotter:
 
             artists = []  # Collect artists for this frame            
 
-            plot_Theta1 = (1 - plot_func) * self.q1_grid + plot_func * self.Theta[0]
-            plot_Theta2 = (1 - plot_func) * self.q2_grid + plot_func * self.Theta[1]
+            plot_Theta0 = (1 - plot_func) * self.q0_grid + plot_func * self.Theta[0]
+            plot_Theta1 = (1 - plot_func) * self.q1_grid + plot_func * self.Theta[1]
 
                 
             for j in range(self.Theta[0].shape[1]):
@@ -110,8 +110,8 @@ class theta_plotter:
                 valid_indices_ver = self.valid_mask[:, j]
                 valid_indices_hor2 = self.valid_mask2[j, :]
                 valid_indices_ver2 = self.valid_mask2[:, j]
-                h_line, = ax.plot(plot_Theta1[j, valid_indices_hor], plot_Theta2[j, valid_indices_hor], color=self.colors[0], lw=0.9)
-                v_line, = ax.plot(plot_Theta1[valid_indices_ver, j], plot_Theta2[valid_indices_ver, j], color=self.colors[0], lw=0.9)
+                h_line, = ax.plot(plot_Theta0[j, valid_indices_hor], plot_Theta1[j, valid_indices_hor], color=self.colors[0], lw=0.9)
+                v_line, = ax.plot(plot_Theta0[valid_indices_ver, j], plot_Theta1[valid_indices_ver, j], color=self.colors[0], lw=0.9)
                 #h_line2, = ax.plot(plot_Theta1[j, valid_indices_hor2], plot_Theta2[j, valid_indices_hor2], color=self.colors[i], lw=0.9)
                 #v_line2, = ax.plot(plot_Theta1[valid_indices_ver2, j], plot_Theta2[valid_indices_ver2, j], color=self.colors[i], lw=0.9)
                 artists.extend([h_line, v_line])#, h_line2, v_line2])
@@ -126,8 +126,8 @@ class theta_plotter:
 
             artists = []  # Collect artists for this frame
 
-            plot_q_hat1 = (1 - plot_func) * self.Theta[0] + plot_func * self.q_hat[0]
-            plot_q_hat2 = (1 - plot_func) * self.Theta[1] + plot_func * self.q_hat[1]
+            plot_q_hat0 = (1 - plot_func) * self.Theta[0] + plot_func * self.q_hat[0]
+            plot_q_hat1 = (1 - plot_func) * self.Theta[1] + plot_func * self.q_hat[1]
     
 
             for j in range(self.Theta[0].shape[1]):
@@ -135,8 +135,8 @@ class theta_plotter:
                 valid_indices_ver = self.valid_mask[:, j]
                 valid_indices_hor2 = self.valid_mask2[j, :]
                 valid_indices_ver2 = self.valid_mask2[:, j]
-                h_line, = ax.plot(plot_q_hat1[j, valid_indices_hor], plot_q_hat2[j, valid_indices_hor], color=self.colors[0], lw=0.9)
-                v_line, = ax.plot(plot_q_hat1[valid_indices_ver, j], plot_q_hat2[valid_indices_ver, j], color=self.colors[0], lw=0.9)
+                h_line, = ax.plot(plot_q_hat0[j, valid_indices_hor], plot_q_hat1[j, valid_indices_hor], color=self.colors[0], lw=0.9)
+                v_line, = ax.plot(plot_q_hat0[valid_indices_ver, j], plot_q_hat1[valid_indices_ver, j], color=self.colors[0], lw=0.9)
                 #h_line2, = ax.plot(plot_q_hat1[j, valid_indices_hor2], plot_q_hat2[j, valid_indices_hor2], color=self.colors[i], lw=0.9)
                 #v_line2, = ax.plot(plot_q_hat1[valid_indices_ver2, j], plot_q_hat2[valid_indices_ver2, j], color=self.colors[i], lw=0.9)
                 artists.extend([h_line, v_line])#, h_line2, v_line2])

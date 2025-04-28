@@ -120,21 +120,21 @@ def analytic_inverse(rp: dict, th: Tensor) -> Tuple:
     beta = torch.arccos(fraction)
 
     # Determine primary angles.
-    q1 = torch.atan2(yend, xend + epsilon) - torch.atan2(rp["l2"]*torch.sin(beta), epsilon + rp["l1"] + rp["l2"]*torch.cos(beta))
-    q2 = q1 + beta
+    q0 = torch.atan2(yend, xend + epsilon) - torch.atan2(rp["l2"]*torch.sin(beta), epsilon + rp["l1"] + rp["l2"]*torch.cos(beta))
+    q1 = q0 + beta
 
     # Determine secondary angles.
-    q1_alt = torch.atan2(yend, xend) + torch.atan2(rp["l2"]*torch.sin(beta), epsilon + rp["l1"] + rp["l2"]*torch.cos(beta))
-    q2_alt = q1_alt - beta 
+    q0_alt = torch.atan2(yend, xend) + torch.atan2(rp["l2"]*torch.sin(beta), epsilon + rp["l1"] + rp["l2"]*torch.cos(beta))
+    q1_alt = q0_alt - beta 
 
     # Normalize values between -pi and pi.
+    q0 = (q0 + torch.pi) % (2 * torch.pi) - torch.pi
     q1 = (q1 + torch.pi) % (2 * torch.pi) - torch.pi
-    q2 = (q2 + torch.pi) % (2 * torch.pi) - torch.pi
+    q0_alt = (q0_alt + torch.pi) % (2 * torch.pi) - torch.pi
     q1_alt = (q1_alt + torch.pi) % (2 * torch.pi) - torch.pi
-    q2_alt = (q2_alt + torch.pi) % (2 * torch.pi) - torch.pi
 
-    q = torch.stack([q1, q2], dim=-1)
-    q_alt = torch.stack([q1_alt, q2_alt], dim=-1)
+    q = torch.stack([q0, q1], dim=-1)
+    q_alt = torch.stack([q0_alt, q1_alt], dim=-1)
 
     # Primary angle is clockwise, secondary is counter-clockwise. 
     q_cw = q
@@ -179,24 +179,24 @@ def inverse_kinematics(pos, rp, is_clockwise):
     beta = torch.arccos(fraction)
 
     # Determine primary angles.
-    q1 = torch.atan2(yend, xend) - torch.atan2(rp["l2"]*torch.sin(beta), rp["l1"] + rp["l2"]*torch.cos(beta))
-    q2 = q1 + beta
+    q0 = torch.atan2(yend, xend) - torch.atan2(rp["l2"]*torch.sin(beta), rp["l1"] + rp["l2"]*torch.cos(beta))
+    q1 = q0 + beta
 
     # Determine secondary angles.
-    q1_alt = torch.atan2(yend, xend) + torch.atan2(rp["l2"]*torch.sin(beta), rp["l1"] + rp["l2"]*torch.cos(beta))
-    q2_alt = q1_alt - beta 
+    q0_alt = torch.atan2(yend, xend) + torch.atan2(rp["l2"]*torch.sin(beta), rp["l1"] + rp["l2"]*torch.cos(beta))
+    q1_alt = q1_alt - beta 
 
-    if torch.isnan(q1) or torch.isnan(q2) or torch.isnan(q1_alt) or torch.isnan(q2_alt):
+    if torch.isnan(q0) or torch.isnan(q1) or torch.isnan(q0_alt) or torch.isnan(q1_alt):
         raise ValueError("NaN encountered in inverse kinematics computation.")
 
     # Normalize values between -pi and pi.
+    q0 = (q0 + torch.pi) % (2 * torch.pi) - torch.pi
     q1 = (q1 + torch.pi) % (2 * torch.pi) - torch.pi
-    q2 = (q2 + torch.pi) % (2 * torch.pi) - torch.pi
+    q0_alt = (q0_alt + torch.pi) % (2 * torch.pi) - torch.pi
     q1_alt = (q1_alt + torch.pi) % (2 * torch.pi) - torch.pi
-    q2_alt = (q2_alt + torch.pi) % (2 * torch.pi) - torch.pi
 
-    q = torch.stack([q1, q2], dim=-1)
-    q_alt = torch.stack([q1_alt, q2_alt], dim=-1)
+    q = torch.stack([q0, q1], dim=-1)
+    q_alt = torch.stack([q0_alt, q1_alt], dim=-1)
 
     # Check whether the primary angle is clockwise. Otherwise, swap with secondary.
     q_cw = q_alt
