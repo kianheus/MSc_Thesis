@@ -1,7 +1,7 @@
 import torch
 from torch import Tensor
 from matplotlib import pyplot as plt
-import Learning.training_data as training_data
+import Double_Pendulum.Learning.training_data as training_data
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 import os
 

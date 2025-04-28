@@ -2,7 +2,7 @@
 from matplotlib.colors import LinearSegmentedColormap
 import numpy as np
 import matplotlib.pyplot as plt
-import Learning.training_data as training_data
+import Double_Pendulum.Learning.training_data as training_data
 import Double_Pendulum.transforms as transforms
 from torch import Tensor
 import torch
