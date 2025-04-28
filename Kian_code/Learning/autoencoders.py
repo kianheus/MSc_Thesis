@@ -44,9 +44,6 @@ class Autoencoder_double(nn.Module):
     
     def theta_ana(self, q):
         theta_ana = torch.vmap(transforms.analytic_theta, in_dims=(None, 0))(self.rp, q)
-        #theta_1_ana, _ = torch.vmap(self.encoder_theta_1_ana)(q)
-        #theta_2_ana, _ = torch.vmap(self.encoder_theta_2_ana)(q)
-        #theta_ana = torch.cat((theta_1_ana, theta_2_ana), dim=1)
         return theta_ana
     
     def encoder(self, q):
@@ -75,9 +72,9 @@ class Autoencoder_double(nn.Module):
     
     def forward(self, q):
         
+        J_h_0_ana, theta_0_ana = torch.vmap(torch.func.jacfwd(self.encoder_theta_0_ana, has_aux=True))(q)
         J_h_1_ana, theta_1_ana = torch.vmap(torch.func.jacfwd(self.encoder_theta_1_ana, has_aux=True))(q)
-        J_h_2_ana, theta_2_ana = torch.vmap(torch.func.jacfwd(self.encoder_theta_2_ana, has_aux=True))(q)
-        J_h_ana = torch.cat((J_h_1_ana, J_h_2_ana), dim=1).float()
+        J_h_ana = torch.cat((J_h_0_ana, J_h_1_ana), dim=1).float()
         
         theta = self.encoder(q)
         J_h = self.jacobian_enc(q) 
@@ -123,7 +120,7 @@ class Analytic_transformer():
         return theta_0, theta_0
     
     #This function is not used in the forward pass, but is useful for comparing learned to analytic theta_1
-    def encoder_theta_2_ana(self, q):
+    def encoder_theta_1_ana(self, q):
         theta_1 = transforms.analytic_theta_1(self.rp, q).unsqueeze(0)
         return theta_1, theta_1
     
