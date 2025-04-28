@@ -133,7 +133,7 @@ def calculate_alpha_beta(th, th_d, M_th, G_th, A_th, Y):
     alpha = dAAdt * (BB + CC) + AA * (dBBdt + dCCdt) - dDDdt * (EE + FF + GG + HH) - DD * (dEEdt + dFFdt + dGGdt_pas + dHHdt)
     beta = - DD * dGGdt_act
 
-    if torch.abs(alpha) > 10.:
+    if False:
         print("BIG ALPHA")
         print("AA", AA)
         print("BB", BB)
