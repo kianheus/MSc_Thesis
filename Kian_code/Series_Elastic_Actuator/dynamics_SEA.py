@@ -19,12 +19,12 @@ def dynamical_matrices(rp: dict, q: Tensor, q_d: Tensor) -> Tuple[Tensor, Tensor
         G_q: gravitational matrix of shape (2, 2)     
     """
     
-    M_q_0 = torch.cat((rp["I0"] + rp["I1"], rp["I1"]), dim = 0).unsqueeze(0)
-    M_q_1 = torch.cat((rp["I1"], rp["I1"]), dim = 0).unsqueeze(0)
+    M_q_0 = torch.cat((torch.tensor([rp["I0"] + rp["I1"]]), torch.tensor([rp["I1"]])), dim = 0).unsqueeze(0)
+    M_q_1 = torch.cat((torch.tensor([rp["I1"]]), torch.tensor([rp["I1"]])), dim = 0).unsqueeze(0)
     M_q = torch.cat((M_q_0, M_q_1), dim = 0)
 
-    G_q_0 = torch.cat((0., 0.), dim = 0).unsqueeze(0)
-    G_q_1 = torch.cat((0., rp["k"]), dim = 0).unsqueeze(0)
+    G_q_0 = torch.cat((torch.tensor([0.]), torch.tensor([0.])), dim = 0).unsqueeze(0)
+    G_q_1 = torch.cat((torch.tensor([0.]), torch.tensor([rp["k"]])), dim = 0).unsqueeze(0)
     G_q = torch.cat((G_q_0, G_q_1), dim = 0)
 
 
@@ -43,7 +43,7 @@ def input_matrix() -> Tensor:
         A_q: input matrix of shape (2, )   
     """
 
-    A_q = torch.cat((1., 0.), dim = 0)
+    A_q = torch.cat((torch.tensor([1.]), torch.tensor([0.])), dim = 0).unsqueeze(-1)
 
     return A_q
 
@@ -59,6 +59,6 @@ def jacobian() -> Tensor:
     J_h_0 = torch.cat((1., 0.), dim = 0).unsqueeze(0)
     J_h_1 = torch.cat((-1., 1.), dim = 0).unsqueeze(0)
     J_h = torch.cat((J_h_0, J_h_1), dim = 0)
-
+    print(J_h)
     
     return J_h
