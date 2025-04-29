@@ -184,7 +184,7 @@ def inverse_kinematics(pos, rp, is_clockwise):
 
     # Determine secondary angles.
     q0_alt = torch.atan2(yend, xend) + torch.atan2(rp["l1"]*torch.sin(beta), rp["l0"] + rp["l1"]*torch.cos(beta))
-    q1_alt = q1_alt - beta 
+    q1_alt = q0_alt - beta 
 
     if torch.isnan(q0) or torch.isnan(q1) or torch.isnan(q0_alt) or torch.isnan(q1_alt):
         raise ValueError("NaN encountered in inverse kinematics computation.")
