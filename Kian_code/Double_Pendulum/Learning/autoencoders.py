@@ -101,18 +101,18 @@ class Analytic_transformer():
         return theta_ana
     
     def decoder(self, theta, clockwise):
-        q_ccw, q_cw = torch.vmap(transforms.analytic_inverse, in_dims=(None, 0))(self.rp, theta)
+        q_cw, q_ccw = torch.vmap(transforms.analytic_inverse, in_dims=(None, 0))(self.rp, theta)
         if clockwise:
             return q_cw
         else:
             return q_ccw
         
     def decoder_cw(self, theta):
-        q_ccw, q_cw = transforms.analytic_inverse(self.rp, theta)
+        q_cw, q_ccw = transforms.analytic_inverse(self.rp, theta)
         return q_cw
     
     def decoder_ccw(self, theta):
-        q_ccw, q_cw = transforms.analytic_inverse(self.rp, theta)
+        q_cw, q_ccw = transforms.analytic_inverse(self.rp, theta)
         return q_ccw
     
     def encoder_theta_0_ana(self, q):
