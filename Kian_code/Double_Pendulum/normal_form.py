@@ -45,12 +45,8 @@ def calculate_Y(th, th_d, M_th, G_th, device):
             1/M1 * (1/2 * ddM1ddth1 * th_d[0,1]**3 + dM1dth1 * th_d[0,1] * y_ii + dG1dth0 * th_d[0,0] + dG1dth1 * th_d[0,1])
     
     if False:
-        print(y_iii)
-        print(G1)
-        print(ddM1ddth1)
-        print(y_ii)
-        print(dG1dth0)
-        print(dG1dth1)
+        print("y_ii:", y_ii.item())
+        print("y_iii:", y_iii.item())
 
 
     Y = torch.tensor([[y],
@@ -116,17 +112,19 @@ def calculate_alpha_beta(th, th_d, M_th, G_th, A_th, Y):
     
 
     if False:
-        print("dM0dthfull:", torch.autograd.grad(M0, th, create_graph=True)[0])
-        print("dM1dthfull:", torch.autograd.grad(M1, th, create_graph=True)[0])
-        print("dM0dth0:", dM0dth0)
-        print("dM1dth1:", dM1dth1)
-        print("ddM1ddth1:", ddM1ddth1)
-        print("dddM1dddth1:", dddM1dddth1)
-        print("dG1dth0:", dG1dth0)
-        print("dG1dth1:", dG1dth1)
-        print("ddG1ddth0:", ddG1ddth0)
-        print("ddG1dth0dth1:", ddG1dth0dth1)
-        print("ddG1ddth1:", ddG1ddth1)
+        print("dM0dth0:", dM0dth0.item())
+        print("dM1dth1:", dM1dth1.item())
+        print("ddM1ddth1:", ddM1ddth1.item())
+        print("dddM1dddth1:", dddM1dddth1.item())
+        print("A0:", A[0].item())
+        print("A1:", A[1].item())
+        print("G0:", G0.item())
+        print("G1:", G1.item())
+        print("dG1dth0:", dG1dth0.item())
+        print("dG1dth1:", dG1dth1.item())
+        print("ddG1ddth0:", ddG1ddth0.item())
+        print("ddG1dth0dth1:", ddG1dth0dth1.item())
+        print("ddG1ddth1:", ddG1ddth1.item())
     
 
     AA = M1**(-2)
@@ -154,25 +152,33 @@ def calculate_alpha_beta(th, th_d, M_th, G_th, A_th, Y):
     alpha = dAAdt * (BB + CC) + AA * (dBBdt + dCCdt) - dDDdt * (EE + FF + GG + HH) - DD * (dEEdt + dFFdt + dGGdt_pas + dHHdt)
     beta = - DD * dGGdt_act
 
-    if False:
-        print("BIG ALPHA")
-        print("AA", AA)
-        print("BB", BB)
-        print("CC", CC)
-        print("DD", DD)
-        print("EE", EE)
-        print("FF", FF)
-        print("GG", GG)
-        print("HH", HH)
+    if False: #alpha > 4.5:
+        print("yii:", y_ii.item())
+        print("y_iii:", y_iii.item())
+        print("AA", AA.item())
+        print("BB", BB.item())
+        print("CC", CC.item())
+        print("DD", DD.item())
+        print("EE", EE.item())
+        print("FF", FF.item())
+        print("GG", GG.item())
+        print("HH", HH.item())
 
-        print("dAAdt", dAAdt)
-        print("dBBdt", dBBdt)
-        print("dCCdt", dCCdt)
-        print("dDDdt", dDDdt)
-        print("dEEdt", dEEdt)
-        print("dFFdt", dFFdt)
-        print("dGGdt", dGGdt)
-        print("dHHdt", dHHdt)
+        print("dAAdt", dAAdt.item())
+        print("dBBdt", dBBdt.item())
+        print("dCCdt", dCCdt.item())
+        print("dDDdt", dDDdt.item())
+        print("dEEdt", dEEdt.item())
+        print("dFFdt", dFFdt.item())
+        #print("dGGdt", dGGdt.item())
+        print("dGGdt_pas", dGGdt_pas.item())
+        print("dGGdt_act", dGGdt_act.item())
+        print("dHHdt", dHHdt.item())
+
+        print("Block 1:", (dAAdt * (BB + CC)).item())
+        print("Block 2:", (AA * (dBBdt + dCCdt)).item())
+        print("Block 3:", (-dDDdt * (EE + FF + GG + HH)).item())
+        print("Block 4:", (- DD * (dEEdt + dFFdt + dGGdt_pas + dHHdt)).item())
 
 
     return alpha, beta
