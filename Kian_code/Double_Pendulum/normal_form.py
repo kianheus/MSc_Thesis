@@ -145,8 +145,8 @@ def calculate_alpha_beta(th, th_d, M_th, G_th, A_th, Y):
     dEEdt = 1/2 * dddM1dddth1 * th_d[0,1]**4 + 3/2 * th_d[0,1]**2 * y_ii * ddM1ddth1
     dFFdt = th_d[0,1]**2 * y_ii * ddM1ddth1 + y_ii**2 * dM1dth1 + y_iii * th_d[0,1] * dM1dth1
     dGGdt_pas = th_d[0,0] * (th_d[0,0] * ddG1ddth0 + th_d[0,1] * ddG1dth0dth1) + M0**(-1) *(- 0.5 * dM0dth0 * th_d[0,0]**2 - G0) * dG1dth0
-    dGGdt_act = M0**(-1) *A[0] * dG1dth0
-    dGGdt = dGGdt_pas + dGGdt_act
+    dGGdt_act = M0**(-1) * A[0] * dG1dth0
+    #dGGdt = dGGdt_pas + dGGdt_act
     dHHdt = y_ii * dG1dth1 + th_d[0,1] * (th_d[0,0] * ddG1dth0dth1 + th_d[0,1] * ddG1ddth1)
 
     
