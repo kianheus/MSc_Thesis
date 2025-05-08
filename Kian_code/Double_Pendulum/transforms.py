@@ -137,8 +137,8 @@ def analytic_inverse(rp: dict, th: Tensor) -> Tuple:
     q_alt = torch.stack([q0_alt, q1_alt], dim=-1)
 
     # Primary angle is clockwise, secondary is counter-clockwise. 
-    q_cw = q
-    q_ccw = q_alt
+    q_ccw = q
+    q_cw = q_alt
     
     return q_cw, q_ccw
 
