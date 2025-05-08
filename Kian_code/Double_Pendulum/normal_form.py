@@ -90,9 +90,30 @@ def calculate_alpha_beta(th, th_d, M_th, G_th, A_th, Y):
     dddM1dddth1 = torch.autograd.grad(ddM1ddth1, th, create_graph=True)[0][0,1]
     dG1dth0 = torch.autograd.grad(G1, th, create_graph=True)[0][0,0]
     dG1dth1 = torch.autograd.grad(G1, th, create_graph=True)[0][0,1]
+    """
     ddG1ddth0 = torch.autograd.grad(dG1dth0, th, create_graph=True)[0][0,0]
     ddG1dth0dth1 = torch.autograd.grad(dG1dth0, th, create_graph=True)[0][0,1]
     ddG1ddth1 = torch.autograd.grad(dG1dth1, th, create_graph=True)[0][0,1]
+    """
+    
+    try:
+        ddG1ddth0 = torch.autograd.grad(dG1dth0, th, create_graph=True)[0][0,0]
+    except RuntimeError:
+        print("Second derivative ddG1ddth0 does not require grad — setting to zero.")
+        ddG1ddth0 = torch.zeros_like(dG1dth0)
+
+    try:
+        ddG1dth0dth1 = torch.autograd.grad(dG1dth0, th, create_graph=True)[0][0,1]
+    except RuntimeError:
+        print("Mixed derivative ddG1dth0dth1 does not require grad — setting to zero.")
+        ddG1dth0dth1 = torch.zeros_like(dG1dth0)
+
+    try:
+        ddG1ddth1 = torch.autograd.grad(dG1dth1, th, create_graph=True)[0][0,1]
+    except RuntimeError:
+        print("Second derivative ddG1ddth1 does not require grad — setting to zero.")
+        ddG1ddth1 = torch.zeros_like(dG1dth1)
+    
 
     if False:
         print("dM0dthfull:", torch.autograd.grad(M0, th, create_graph=True)[0])
