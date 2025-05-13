@@ -68,7 +68,7 @@ def analytic_theta_1(rp: dict, q: Tensor) -> Tensor:
     th1 is defined as the link angle, and is thus equal to q1 - 0.
     """
 
-    th1 = q[1] - q[0]
+    th1 = q[1] + q[0]
     
     return th1
 

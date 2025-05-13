@@ -13,7 +13,7 @@ def dynamical_matrices(rp: dict, q: Tensor, q_d: Tensor) -> Tuple[Tensor, Tensor
 
     Args:
         rp: dictionary of robot parameters
-        q: (motor angle, motor angle +link angle) of shape (2, )
+        q: (motor angle, link angle - motor angle) of shape (2, )
     Returns:
         M_q: inertial matrix of shape (2, 2)
         G_q: gravitational matrix of shape (2, 2)     
@@ -57,7 +57,7 @@ def jacobian() -> Tensor:
     """
 
     J_h_0 = torch.cat((1., 0.), dim = 0).unsqueeze(0)
-    J_h_1 = torch.cat((-1., 1.), dim = 0).unsqueeze(0)
+    J_h_1 = torch.cat((1., 1.), dim = 0).unsqueeze(0)
     J_h = torch.cat((J_h_0, J_h_1), dim = 0)
     print(J_h)
     
