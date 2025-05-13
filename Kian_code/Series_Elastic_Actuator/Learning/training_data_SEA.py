@@ -4,10 +4,10 @@ import torch
 n_samples = 3000
 
 # Data range
-q0_low  = -torch.pi
-q0_high = torch.pi
-q1_low  = -torch.pi
-q1_high = torch.pi
+q0_low  = -torch.pi*0.9
+q0_high = torch.pi*0.9
+q1_low  = -torch.pi*0.9
+q1_high = torch.pi*0.9
 
 # Generate uniformly distributed points for q1 and q2
 q0 = q0_low + (q0_high - q0_low) * torch.rand(n_samples)
