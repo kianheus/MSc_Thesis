@@ -15,20 +15,20 @@ class Autoencoder_double(nn.Module):
     def __init__(self, rp):
         super().__init__()
         self.enc = nn.Sequential(
-            nn.Linear(2, 2),
-            #nn.Softplus(),
-            #nn.Linear(4, 4),
+            nn.Linear(2, 16),
             nn.Softplus(),
-            nn.Linear(2, 2)
+            nn.Linear(16, 16),
+            nn.Softplus(),
+            nn.Linear(16, 2)
         )
         
         
         self.dec = nn.Sequential(
-            nn.Linear(2, 2),
-            #nn.Softplus(),
-            #nn.Linear(4, 4),
+            nn.Linear(2, 16),
             nn.Softplus(),
-            nn.Linear(2, 2)
+            nn.Linear(16, 16),
+            nn.Softplus(),
+            nn.Linear(16, 2)
         )
         
         self.rp = rp
