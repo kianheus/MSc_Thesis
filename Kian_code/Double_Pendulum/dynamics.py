@@ -49,11 +49,17 @@ def add_spring_force_G_q(rp: dict, q: Tensor, G_q, k_spring: float) -> Tensor:
     """
     Adds spring force to the potential matrix based on spring constant k_spring.
     """
+    k0 = k_spring[0]
+    k1 = k_spring[1]
 
-    K_q = torch.tensor([[-k_spring, k_spring], 
-                        [k_spring, -k_spring]]).to(device)
+    K_q0 = torch.tensor([[-k0,  0],
+                         [0,    0]]).to(device)
+
+    K_q1 = torch.tensor([[-k1, k1], 
+                         [k1, -k1]]).to(device)
     
-    G_q += K_q @ q.T
+
+    G_q += (K_q0 + K_q1) @ q.T
 
     return G_q
 
