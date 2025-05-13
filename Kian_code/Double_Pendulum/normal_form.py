@@ -204,23 +204,27 @@ def calculate_y_iv(alpha, beta, u):
 
     return y_iv
 
-def check_stable_gains(K):
+def check_stable_gains(K, verbose = False):
 
     K = K.squeeze(0)
     stable = True
     for i in range(4):
-        print("K[" + str(i) + "] =", round(K[i].item(), 11))
+        if verbose:
+            print("K[" + str(i) + "] =", round(K[i].item(), 11))
         if K[i] <= 0:
             stable = False
             print("Unstable gains because K[" + str(i) + "] is <= 0.")
-    print("\nFor K3 * K2 > K1 criterion:")
-    print("K3 * K2 =", round((K[3] * K[2]).item(), 11))
-    print("K1 = ", round((K[1]).item(), 11))
 
-    print("\nFor K3 * K2 * K1 > K1**2 + K3**2 * K1 criterion:")
-    print("K3 * K2 * K1 =", round((K[3] * K[2] * K[1]).item(), 11))
-    print("K1**2 =", round((K[1]**2).item(), 11))
-    print("K3**2 * K0 =", round((K[3]**2 * K[0]).item(), 3), "\n")
+    if verbose:
+        print("\nFor K3 * K2 > K1 criterion:")
+        print("K3 * K2 =", round((K[3] * K[2]).item(), 11))
+        print("K1 = ", round((K[1]).item(), 11))
+
+        print("\nFor K3 * K2 * K1 > K1**2 + K3**2 * K1 criterion:")
+        print("K3 * K2 * K1 =", round((K[3] * K[2] * K[1]).item(), 11))
+        print("K1**2 =", round((K[1]**2).item(), 11))
+        print("K3**2 * K0 =", round((K[3]**2 * K[0]).item(), 3), "\n")
+        
     if K[3] * K[2] < K[1]:
         stable = False
         print("Unstable because K[3] * K[2] < K[1]")
