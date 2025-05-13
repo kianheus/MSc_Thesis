@@ -109,13 +109,15 @@ def analytic_inverse(rp: dict, th: Tensor) -> Tuple:
     xend = rp["xa"] - th[0]*torch.cos(th[1])
     yend = rp["ya"] - th[0]*torch.sin(th[1])
 
+
+
     # Calculate the inside angle of the two joints, used to determine q1. 
     numerator = (xend**2 + yend**2 - rp["l0"]**2 - rp["l1"]**2)
     denominator = torch.tensor(2*rp["l0"]*rp["l1"])
     fraction = numerator/denominator
     
     epsilon = 1e-6
-    fraction = torch.clamp(fraction, -1.0 + epsilon, 1.0 - epsilon)
+    #fraction = torch.clamp(fraction, -1.0 + epsilon, 1.0 - epsilon)
 
     beta = torch.arccos(fraction)
 
