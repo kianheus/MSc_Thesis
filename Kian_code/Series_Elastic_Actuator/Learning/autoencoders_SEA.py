@@ -15,20 +15,20 @@ class Autoencoder_double(nn.Module):
     def __init__(self, rp):
         super().__init__()
         self.enc = nn.Sequential(
-            nn.Linear(2, 16),
+            nn.Linear(2, 4),
             nn.Softplus(),
-            nn.Linear(16, 16),
-            nn.Softplus(),
-            nn.Linear(16, 2)
+            #nn.Linear(16, 16),
+            #nn.Softplus(),
+            nn.Linear(4, 2)
         )
         
         
         self.dec = nn.Sequential(
-            nn.Linear(2, 16),
+            nn.Linear(2, 4),
             nn.Softplus(),
-            nn.Linear(16, 16),
-            nn.Softplus(),
-            nn.Linear(16, 2)
+            #nn.Linear(16, 16),
+            #nn.Softplus(),
+            nn.Linear(4, 2)
         )
         
         self.rp = rp
@@ -164,3 +164,27 @@ class Analytic_transformer():
         # Change depending on your use case
 
         return theta, J_h, q_hat, J_h_dec, J_h_ana
+
+
+def summarize_sequential(sequential):
+    layers = []
+    for layer in sequential:
+        if isinstance(layer, nn.Linear):
+            layers.append({
+                "type": "Linear",
+                "in_features": layer.in_features,
+                "out_features": layer.out_features
+            })
+        elif isinstance(layer, nn.ReLU):
+            layers.append({"type": "ReLU"})
+        elif isinstance(layer, nn.Softplus):
+            layers.append({"type": "Softplus"})
+        elif isinstance(layer, nn.Tanh):
+            layers.append({"type": "Tanh"})
+        elif isinstance(layer, nn.Sigmoid):
+            layers.append({"type": "Sigmoid"})
+        else:
+            layers.append({"type": str(layer.__class__.__name__)})  # Fallback
+    return layers
+
+    
