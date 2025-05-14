@@ -5,7 +5,7 @@ n_samples = 100000
 
 # Data range
 q0_low  = -torch.pi
-q0_high = torch.pi
+q0_high = 0.#torch.pi
 q1_low  = -torch.pi
 q1_high = 2*torch.pi
 
