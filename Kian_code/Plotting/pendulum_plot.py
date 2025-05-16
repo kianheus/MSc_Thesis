@@ -280,7 +280,7 @@ class Error_plotter:
         """
         self.rp = rp
 
-    def create_plot_dataset(self, t, datasets, reference, name):
+    def create_plot_dataset(self, t, datasets, reference = None, name = "Plot"):
         """
         Prepares a plot dataset for a single subplot column.
         All datasets passed in will be drawn on the same pair of subplots.
@@ -302,7 +302,7 @@ class Error_plotter:
             "plot_name": name,
             "x": t,
             "data": [],  # will hold multiple dataset entries (lines) to be plotted together
-            "reference": reference.cpu().detach().numpy()[0]
+            "reference": None if reference is None else reference.cpu().detach().numpy()[0]
         }
 
         # Iterate over each dataset and store its info.
@@ -339,15 +339,18 @@ class Error_plotter:
             x = ps["x"]
             for i in range(2):
                 ykey = "y" + str(i+1)
-                ref = ps["reference"][i]
-                # Plot all lines for y1 on the top subplot of the column.
-                reference_line = Line2D([0], [0], color="dimgray", linestyle="--", label="ref")
+
+                if ps["reference"] is not None:
+                    ref = ps["reference"][i]
+                    reference_line = Line2D([0], [0], color="dimgray", linestyle="--", label="ref")
+                    axes[i, col_index].axhline(ref, color="dimgray", ls="--")
                 line_handles = []
-                axes[i, col_index].axhline(ref, color="dimgray", ls="--")
                 for line in ps["data"]:
                     line_handle, = axes[i, col_index].plot(x, line[ykey], label=line["name"], color=line["color"])
                     line_handles.append(line_handle)
-                line_handles.append(reference_line)
+                
+                if ps["reference"] is not None:
+                    line_handles.append(reference_line)
                 axes[i, col_index].set_title(ps["plot_name"])
                 axes[i, col_index].set_xlabel("Time")
                 axes[i, col_index].set_ylabel(str(axes_names[col_index]) + "_" + str(i))
