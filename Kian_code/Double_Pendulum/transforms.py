@@ -26,13 +26,16 @@ def transform_dynamical_from_inverse(M_q: Tensor, C_q: Tensor, G_q: Tensor, thet
     M_th = J_h_inv_trans @ M_q @ J_h_inv
 
     C_th = torch.zeros(M_th.size()).to(M_q.device)
+    dM_ths = torch.zeros((C_th.size(0), C_th.size(1), C_th.size(1)))
     for i in range(C_th.size(0)):
         for j in range(C_th.size(1)):
             for k in range(C_th.size(1)):
-                M_th_dot_ijk = torch.autograd.grad(M_th[i,j], theta, create_graph=True)[0][0,k]
-                M_th_dot_ikj = torch.autograd.grad(M_th[i,k], theta, create_graph=True)[0][0,j]
-                M_th_dot_jki = torch.autograd.grad(M_th[j,k], theta, create_graph=True)[0][0,i]
-                C_th[i, j] += 0.5 * (M_th_dot_ijk + M_th_dot_ikj - M_th_dot_jki) * theta_d[0, k]
+                dM_ths[i, j, k] =  torch.autograd.grad(M_th[i,j], theta, create_graph=True)[0][0,k]
+
+    for i in range(C_th.size(0)):
+        for j in range(C_th.size(1)):
+            for k in range(C_th.size(1)):
+                C_th[i, j] += 0.5 * (dM_ths[i,j,k] + dM_ths[i,k,j] - dM_ths[j,k,i]) * theta_d[0, k]
 
     G_th = J_h_inv_trans @ G_q
 
