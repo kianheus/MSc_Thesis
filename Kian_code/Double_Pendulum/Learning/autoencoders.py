@@ -158,8 +158,8 @@ class Analytic_transformer():
 
         theta = self.theta_ana(q)
         q_hat = self.decoder_vmap(theta, clockwise)
-        J_h = torch.vmap(torch.func.jacfwd(self.encoder_nn, has_aux=True))(q)
-        J_h_dec, q_hat = torch.vmap(torch.func.jacfwd(self.decoder_nn_cw, has_aux=True))(theta)
+        J_h = torch.vmap(torch.func.jacfwd(self.encoder, has_aux=False))(q)
+        J_h_dec = torch.vmap(torch.func.jacfwd(self.decoder_ccw, has_aux=False))(theta)
         print("Only taking cw decoder, are you sure you want this?")
         # Change depending on your use case
 
