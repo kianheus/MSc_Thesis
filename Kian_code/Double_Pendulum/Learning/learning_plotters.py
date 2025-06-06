@@ -39,10 +39,10 @@ def training_points_plotter(points, extend = None, save = False, save_folder = N
 	plt.show()
 
 
-def plot_loss(train_loss, val_loss, log = False, save_folder = None):
+def plot_loss(train_loss, val_loss, file_counter, log = False, save_folder = None):
 
 	if save_folder is not None:
-		save_path = save_folder + "/loss_vs_epoch.pdf"
+		save_path = save_folder + "/loss_vs_epoch_" + str(file_counter) + ".pdf"
 	else:
 		save_path = None
 
