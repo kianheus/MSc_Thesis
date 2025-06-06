@@ -249,7 +249,7 @@ def check_clockwise(q):
     return clockwise
 
 
-# Function to flip joint angles to their (counter)clockwise equivalent, depending on input "flilp_to_cw".
+# Function to flip joint angles to their (counter)clockwise equivalent, depending on input "flip_to_cw".
 def flip_q(rp, q, flip_to_cw):
     pos, _ = forward_kinematics(rp, q)
     q_flipped = inverse_kinematics(pos, rp, is_clockwise=flip_to_cw)
