@@ -250,10 +250,22 @@ def plot_model_performance(model, model_ana, plot_dataloader, save_folder, devic
 			M_th_ana = J_h_inv_trans_ana @ M_q @ J_h_inv_ana
 			A_th_ana = (J_h_inv_trans_ana @ A_q).squeeze(-1)
 
+			J_h_eye = torch.bmm(J_h, J_h_inv)
+			J_h_eye_error = J_h_eye - torch.eye(2).to(device)
+
+			J_norm = torch.norm(J_h_eye_error, "fro", dim=(1,2))
+
+			A_th_target = torch.tensor([[1.,0.]]).repeat(6000, 1).to(device)
+
+			A_th_norm = torch.norm(A_th - A_th_target, "fro", dim=(1))
+
+			print("A_th_target size:", A_th_target.size())
+			print("A_th_norm size:", A_th_norm.size())
+
 
 			A_th_cpu = A_th.cpu().detach().numpy()
-			print("Percentage of abs(A_0) > 0.6:", 100 * np.sum(np.abs(A_th_cpu[:, 0]) > 0.6)/A_th_cpu[:, 0].size, "%")
-			print("Percentage of abs(A_1) < 0.3:", 100 * np.sum(np.abs(A_th_cpu[:, 1]) < 0.3)/A_th_cpu[:, 1].size, "%")
+			print("Percentage of abs(A_0) > 0.8:", 100 * np.sum(np.abs(A_th_cpu[:, 0]) > 0.8)/A_th_cpu[:, 0].size, "%")
+			print("Percentage of abs(A_1) < 0.2:", 100 * np.sum(np.abs(A_th_cpu[:, 1]) < 0.2)/A_th_cpu[:, 1].size, "%")
 			
 			
 			M_th_cpu = M_th.cpu().detach().numpy()
@@ -275,7 +287,9 @@ def plot_model_performance(model, model_ana, plot_dataloader, save_folder, devic
 			if plotting_2d:
 				plotters_simple.plot_2d_double(q, [A_th[:, 0], A_th[:, 1]], "Input matrix terms", [r"$A_{0}$", r"$A_{1}$"], r"$q_0$", r"$q_1$", r"$A$", save_folder)
 				plotters_simple.plot_2d_quad(q, [M_th[:, 0, 0], M_th[:, 0, 1], M_th[:, 1, 0], M_th[:, 1, 1]], r"$M_{\theta}$" + " vs " + r"$q$", 
-										 [r"$M_{\theta_{0,0}}$", r"$M_{\theta_{0,1}}$", r"$M_{\theta_{1,0}}$", r"$M_{\theta_{1,1}}$"], r"$q_{0}$", r"$q_{1}$", "M_th", save_folder)
+											[r"$M_{\theta_{0,0}}$", r"$M_{\theta_{0,1}}$", r"$M_{\theta_{1,0}}$", r"$M_{\theta_{1,1}}$"], r"$q_{0}$", r"$q_{1}$", "M_th", save_folder)
+				plotters_simple.plot_2d_single(q, J_norm, "J identity norm terms", "Jacobian identity error", r"$q_0$", r"$q_1$", r"$\|J_{enc}J_{dec} - I\|_F$", save_folder)
+				plotters_simple.plot_2d_single(q, A_th_norm, "A_th norm terms", r"$A_{\theta}$" + " error", r"$q_0$", r"$q_1$", r"$\|A_{\theta} - [1, 0]^T\|_F$", save_folder)
 				
 			
 
