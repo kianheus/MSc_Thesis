@@ -75,6 +75,8 @@ class Anim_plotter():
         fig, ax = plt.subplots(figsize=(6, 6))
         ax.set_xlim(-self.robot_range*1.2, self.robot_range)
         ax.set_ylim(-self.robot_range, self.robot_range*1.2)
+        #ax.set_xlim(-2, 4)
+        #ax.set_ylim(0, 6)
         ax.set_xlabel("x")
         ax.set_ylabel("y")
         ax.set_title("Double Pendulum Animation")
