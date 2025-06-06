@@ -148,7 +148,7 @@ def check_clockwise_vectorized(q):
 		return cw_mask, ccw_mask
 
 
-def plot_yinyang(n_points, save_folder, file_counter, train_clockwise, models, model_names, rp, device):
+def plot_yinyang(n_points, q0_split, save_folder, file_counter, train_clockwise, models, model_names, rp, device):
 	for i in range(2):
 
 		if i == 0:
@@ -158,7 +158,7 @@ def plot_yinyang(n_points, save_folder, file_counter, train_clockwise, models, m
 
 			theta_xy_fig_path = os.path.join(save_folder, "theta_vs_q_full" + str(file_counter) + ".eps")
 		if i == 1:
-			q0_vals = torch.linspace(training_data.q0_low, training_data.q0_high, n_points)
+			q0_vals = torch.linspace(q0_split[0], q0_split[1], n_points)
 			q1_vals = torch.linspace(training_data.q1_low, training_data.q1_high, n_points)		
 			theta_xy_fig_path = os.path.join(save_folder, "theta_vs_q_partial" + str(file_counter) + ".eps")
 
