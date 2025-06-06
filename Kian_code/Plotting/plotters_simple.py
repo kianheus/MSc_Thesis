@@ -4,6 +4,11 @@ from matplotlib import pyplot as plt
 import Double_Pendulum.Learning.training_data as training_data
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 import os
+import matplotlib
+
+matplotlib.rcParams['font.family']   = 'serif'
+matplotlib.rcParams['font.serif']    = ['Times New Roman']
+matplotlib.rcParams['mathtext.fontset'] = 'dejavuserif'
 
 """
 def plot_data(device, points_tensor):
@@ -32,7 +37,7 @@ def plot_3d_double(points_tensor, zs, plot_title, sub_titles, xlabel, ylabel, zl
 
     for i in range(2):
         z = zs[i].cpu()
-        sc = axes[i].scatter(x, y, z, c=z, cmap="viridis", edgecolor='none')
+        sc = axes[i].scatter(x, y, z, c=z, cmap="viridis", edgecolor='none', alpha = 0.3)
         axes[i].set_xlabel(xlabel)
         axes[i].set_ylabel(ylabel)
         axes[i].set_zlabel(zlabel)
@@ -60,7 +65,7 @@ def plot_3d_quad(points_tensor, zs, plot_title, sub_titles, xlabel, ylabel, zlab
         for j in range(2):
 
             z = zs[2*i + j].cpu()
-            sc = axes[i, j].scatter(x, y, z, c=z, cmap="viridis", edgecolor="none")
+            sc = axes[i, j].scatter(x, y, z, c=z, cmap="viridis", edgecolor="none", alpha = 0.3)
             axes[i, j].set_xlabel(xlabel)
             axes[i, j].set_ylabel(ylabel)
             axes[i, j].set_zlabel(zlabel)
@@ -70,6 +75,84 @@ def plot_3d_quad(points_tensor, zs, plot_title, sub_titles, xlabel, ylabel, zlab
     
     fig.suptitle(plot_title, fontsize=16, y=0.95)  
     fig.subplots_adjust(left=0.0, right=0.9, wspace=0.1)  
-    plt.tight_layout
+    plt.tight_layout()
     plt.savefig(file_path)
+    plt.show()
+
+
+def plot_2d_single(points_tensor, z, plot_title, sub_title, xlabel, ylabel, zlabel, folder_path):
+
+    x = points_tensor[:, 0].cpu()
+    y = points_tensor[:, 1].cpu()
+
+    file_name = plot_title.replace(" ", "_") + ".eps"
+    file_path = os.path.join(folder_path, file_name)
+    csfont = {'fontname':'Times New Roman'}
+    fig, ax = plt.subplots(figsize=(5, 3))
+
+    z = z.cpu()
+    sc = ax.scatter(x, y, c=z, cmap="viridis", edgecolor="none")#, norm=matplotlib.colors.LogNorm())
+    ax.set_xlabel(xlabel)
+    ax.set_ylabel(ylabel)
+    ax.grid()
+    ax.set_title(sub_title, **csfont)
+    fig.colorbar(sc, ax = ax, orientation='vertical', label=zlabel)
+    
+    
+    #fig.suptitle(plot_title,)  
+    plt.tight_layout()
+    plt.savefig(file_path)
+    plt.show()
+
+def plot_2d_double(points_tensor, zs, plot_title, sub_titles, xlabel, ylabel, zlabel, folder_path):
+
+    x = points_tensor[:, 0].cpu()
+    y = points_tensor[:, 1].cpu()
+
+    file_name = plot_title.replace(" ", "_") + ".eps"
+    file_path = os.path.join(folder_path, file_name)
+    csfont = {'fontname':'Times New Roman'}
+    fig, axes = plt.subplots(1, 2, figsize=(10, 4))
+    for i in range(2):
+        ax = axes[i]
+        z = zs[i].cpu()
+        sc = ax.scatter(x, y, c=z, cmap="viridis", edgecolor="none")#, norm=matplotlib.colors.LogNorm())
+        ax.set_xlabel(xlabel)
+        ax.set_ylabel(ylabel)
+        ax.grid()
+        ax.set_title(sub_titles[i], **csfont)
+        fig.colorbar(sc, ax = ax, orientation='vertical')
+    
+    
+    #fig.suptitle(plot_title,)  
+    plt.tight_layout()
+    plt.savefig(file_path)
+    plt.show()
+
+
+def plot_2d_quad(points_tensor, zs, plot_title, sub_titles, xlabel, ylabel, zlabel, folder_path):
+
+    x = points_tensor[:, 0].cpu()
+    y = points_tensor[:, 1].cpu()
+
+    file_name = plot_title.replace(" ", "_") + ".eps"
+    file_path = os.path.join(folder_path, file_name)
+    csfont = {'fontname':'Times New Roman'}
+
+    fig, axes = plt.subplots(2, 2, figsize=(10, 8.5))
+    for i in range(2):
+        for j in range(2):
+            ax = axes[i, j]
+            z = zs[2*i + j].cpu()
+            sc = ax.scatter(x, y, c=z, cmap="viridis", edgecolor="none")#, norm=matplotlib.colors.LogNorm())
+            ax.set_xlabel(xlabel)
+            ax.set_ylabel(ylabel)
+            ax.grid()
+            ax.set_title(sub_titles[2*i+j], **csfont)
+            fig.colorbar(sc, ax=ax, orientation='vertical')
+    
+    #fig.suptitle(plot_title, fontsize=16, y=0.95)  
+    #fig.subplots_adjust(left=0.0, right=0.9, wspace=0.1)  
+    plt.tight_layout()
+    plt.savefig(file_path, format='eps')
     plt.show()
