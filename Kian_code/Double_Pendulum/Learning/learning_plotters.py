@@ -275,7 +275,7 @@ def plot_model_performance(model, model_ana, plot_dataloader, save_folder, devic
 			
 			M_th_cpu = M_th.cpu().detach().numpy()
 			print("Percentage of abs(M_00) > 1.0:", 100 * np.sum(np.abs(M_th_cpu[:, 0, 0]) > 1.0)/M_th_cpu[:, 0, 0].size, "%")
-			print("Percentage of abs(M_01) < 0.2:", 100 * np.sum(np.abs(M_th_cpu[:, 0, 1]) < 0.2)/M_th_cpu[:, 0, 1].size, "%")
+			print("Percentage of abs(M_01) < 0.1:", 100 * np.sum(np.abs(M_th_cpu[:, 0, 1]) < 0.1)/M_th_cpu[:, 0, 1].size, "%")
 			print("Percentage of abs(M_11) > 1.0:", 100 * np.sum(np.abs(M_th_cpu[:, 1, 1]) > 1.0)/M_th_cpu[:, 1, 1].size, "%")
 
 			plotting_3d = False
