@@ -44,7 +44,7 @@ def dynamical_matrices(rp: dict, q: Tensor, q_d: Tensor) -> Tuple[Tensor, Tensor
 
     return M_q, C_q, G_q 
 
-def add_spring_force_G_q(rp: dict, q: Tensor, G_q, k_spring: float) -> Tensor:
+def add_spring_force_G_q(rp: dict, q: Tensor, G_q, k_spring: Tensor, rest_angles: Tensor) -> Tensor:
 
     """
     Adds spring force to the potential matrix based on spring constant k_spring.
@@ -52,16 +52,22 @@ def add_spring_force_G_q(rp: dict, q: Tensor, G_q, k_spring: float) -> Tensor:
     k0 = k_spring[0]
     k1 = k_spring[1]
 
+    offset0 = rest_angles[0]
+    offset1 = rest_angles[1]
+
     K_q0 = torch.tensor([[-k0,  0],
                          [0,    0]]).to(device)
 
     K_q1 = torch.tensor([[-k1, k1], 
                          [k1, -k1]]).to(device)
     
+    bias = torch.tensor([[k0 * offset0 - k1 * offset1],
+                         [0.           + k1 * offset1]]).to(device)
 
-    G_q += (K_q0 + K_q1) @ q.T
+    G_q_spring = (K_q0 + K_q1) @ q.T + bias
+    G_q_total = G_q + G_q_spring
 
-    return G_q
+    return G_q_total
 
 
 def input_matrix(rp: dict, q: Tensor) -> Tensor:
