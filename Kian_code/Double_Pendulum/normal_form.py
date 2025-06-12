@@ -55,11 +55,6 @@ def calculate_Y(th, th_d, M_th, G_th, device):
                       [y_iii]]).to(device)
     
     return Y
-
-def calculate_Y_inverse(Y, M_th, C0, C1, G0, G1, device):
-
-    th1 = Y[0,0]
-    th1_d = Y[1,0]
     
 
 def calculate_alpha_beta(th, th_d, M_th, G_th, A_th, Y):
