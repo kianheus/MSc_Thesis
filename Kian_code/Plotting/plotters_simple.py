@@ -139,7 +139,7 @@ def plot_2d_quad(points_tensor, zs, plot_title, sub_titles, xlabel, ylabel, zlab
     file_path = os.path.join(folder_path, file_name)
     csfont = {'fontname':'Times New Roman'}
 
-    fig, axes = plt.subplots(2, 2, figsize=(10, 8.5))
+    fig, axes = plt.subplots(2, 2, figsize=(6, 0.6*8.5))
     for i in range(2):
         for j in range(2):
             ax = axes[i, j]

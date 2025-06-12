@@ -177,7 +177,7 @@ def plot_yinyang(n_points, q0_split, save_folder, file_counter, train_clockwise,
 				raise ValueError("This plotter currently only supports plotting counterclockwise performance. Should be an easy fix")
 
 
-		fig, axes = plt.subplots(2, 2, figsize=(10, 8.5))
+		fig, axes = plt.subplots(2, 2, figsize=(8, 0.8*8.5))
 		for i, (model, model_name) in enumerate(zip(models, model_names)):
 
 				theta_out = model.encoder_vmap(q_grid)
