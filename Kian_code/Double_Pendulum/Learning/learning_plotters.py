@@ -252,12 +252,17 @@ def plot_model_performance(model, model_ana, plot_dataloader, save_folder, devic
 
 			J_h_eye = torch.bmm(J_h, J_h_inv)
 			J_h_eye_error = J_h_eye - torch.eye(2).to(device)
-
 			J_norm = torch.norm(J_h_eye_error, "fro", dim=(1,2))
 
-			A_th_target = torch.tensor([[1.,0.]]).repeat(6000, 1).to(device)
-
+			A_th_target = torch.tensor([[1.,0.]]).repeat(A_th.size(0), 1).to(device)
 			A_th_norm = torch.norm(A_th - A_th_target, "fro", dim=(1))
+
+			M_th_clamped = torch.clamp(M_th, max = 1.)
+			M_th_target = torch.eye(2).unsqueeze(0).expand(M_th.size(0), -1, -1).to(device)
+			M_th_norm = torch.norm(M_th_clamped - M_th_target, "fro", dim=(1,2))
+
+			q_norm = torch.norm(q - q_hat, dim=1)
+
 
 			print("A_th_target size:", A_th_target.size())
 			print("A_th_norm size:", A_th_norm.size())
@@ -289,7 +294,8 @@ def plot_model_performance(model, model_ana, plot_dataloader, save_folder, devic
 				plotters_simple.plot_2d_quad(q, [M_th[:, 0, 0], M_th[:, 0, 1], M_th[:, 1, 0], M_th[:, 1, 1]], r"$M_{\theta}$" + " vs " + r"$q$", 
 											[r"$M_{\theta_{0,0}}$", r"$M_{\theta_{0,1}}$", r"$M_{\theta_{1,0}}$", r"$M_{\theta_{1,1}}$"], r"$q_{0}$", r"$q_{1}$", "M_th", save_folder)
 				plotters_simple.plot_2d_single(q, J_norm, "J identity norm terms", "Jacobian identity error", r"$q_0$", r"$q_1$", r"$\|J_{enc}J_{dec} - I\|_F$", save_folder)
-				plotters_simple.plot_2d_single(q, A_th_norm, "A_th norm terms", r"$A_{\theta}$" + " error", r"$q_0$", r"$q_1$", r"$\|A_{\theta} - [1, 0]^T\|_F$", save_folder)
+				plotters_simple.plot_2d_single(q, A_th_norm, "A_th norm terms", r"$\boldsymbol{A}_{\theta}(\boldsymbol{\theta})$" + " error", r"$q_0$", r"$q_1$", r"$\|A_{\theta} - [1, 0]^T\|_F$", save_folder)
+				plotters_simple.plot_2d_single(q, M_th_norm, "M_th norm terms", r"$\boldsymbol{M}_{\theta}(\boldsymbol{\theta})$" + " error", r"$q_0$", r"$q_1$", r"$\|M_{\theta} - I_1\|_F$", save_folder)
 				
 			
 
