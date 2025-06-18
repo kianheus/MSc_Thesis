@@ -47,7 +47,7 @@ class Anim_plotter():
 
         return frames_data
 
-    def animate_pendulum(self, frames_data_multi, ref_poss=None, plot_actuator = True, save_path=None, fps=30, dt = 0.01):
+    def animate_pendulum(self, frames_data_multi, video_title, ref_poss=None, plot_actuator = True, save_path=None, fps=30, dt = 0.01):
 
         """
         Create and save the double pendulum animation.
@@ -79,7 +79,7 @@ class Anim_plotter():
         #ax.set_ylim(0, 6)
         ax.set_xlabel("x")
         ax.set_ylabel("y")
-        ax.set_title("Double Pendulum Animation")
+        ax.set_title(video_title)
         ax.grid(True, linestyle="--", alpha=0.7)
 
         # Create text element to display the time step
@@ -330,7 +330,7 @@ class Error_plotter:
         """
         n = len(plot_datasets)  # number of subplot columns
         # Create subplots: 2 rows (one for y1 and one for y2) and n columns.
-        fig, axes = plt.subplots(2, n, figsize=(5 * n, 8))
+        fig, axes = plt.subplots(2, n, figsize=(0.7 * 5 * n, 5))
         
         # When n == 1, axes may be 1D, so force it to be 2D.
         if n == 1:
@@ -344,7 +344,7 @@ class Error_plotter:
 
                 if ps["reference"] is not None:
                     ref = ps["reference"][i]
-                    reference_line = Line2D([0], [0], color="dimgray", linestyle="--", label="ref")
+                    reference_line = Line2D([0], [0], color="dimgray", linestyle="--", label="reference")
                     axes[i, col_index].axhline(ref, color="dimgray", ls="--")
                 line_handles = []
                 for line in ps["data"]:
@@ -354,16 +354,16 @@ class Error_plotter:
                 if ps["reference"] is not None:
                     line_handles.append(reference_line)
                 axes[i, col_index].set_title(ps["plot_name"])
-                axes[i, col_index].set_xlabel("Time")
-                axes[i, col_index].set_ylabel(str(axes_names[col_index]) + "_" + str(i))
+                axes[i, col_index].set_xlabel("time (t)")
+                axes[i, col_index].set_ylabel(axes_names[col_index][i])
                 axes[i, col_index].legend(handles=line_handles)
                 axes[i, col_index].grid(True, linestyle='--')
 
-        overall_title = "Trajectory plots: x_a = " + str(self.rp["xa"]) + ", y_a = " + str(self.rp["ya"])
+        overall_title = "Non-collocated control on learned coordinates"
         fig.suptitle(overall_title, fontsize=16)
         # Adjust layout to make room for the suptitle.
-        plt.tight_layout(rect=[0, 0, 1, 0.96])
+        plt.tight_layout()
 
         # Save and display the figure.
-        plt.savefig(save_path)
+        plt.savefig(save_path+".pdf", format = "pdf")
         plt.show()
