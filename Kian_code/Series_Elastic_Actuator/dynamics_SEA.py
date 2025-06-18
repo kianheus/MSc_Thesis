@@ -21,11 +21,11 @@ def dynamical_matrices(rp: dict, q: Tensor, q_d: Tensor) -> Tuple[Tensor, Tensor
     
     M_q_0 = torch.cat((torch.tensor([rp["I0"] + rp["I1"]]), torch.tensor([rp["I1"]])), dim = 0).unsqueeze(0)
     M_q_1 = torch.cat((torch.tensor([rp["I1"]]), torch.tensor([rp["I1"]])), dim = 0).unsqueeze(0)
-    M_q = torch.cat((M_q_0, M_q_1), dim = 0)
+    M_q = torch.cat((M_q_0, M_q_1), dim = 0).to(device)
 
-    G_q_0 = torch.cat((torch.tensor([0.]), torch.tensor([0.])), dim = 0).unsqueeze(0)
-    G_q_1 = torch.cat((torch.tensor([0.]), torch.tensor([rp["k"]])), dim = 0).unsqueeze(0)
-    G_q = torch.cat((G_q_0, G_q_1), dim = 0)
+    G_q_0 = torch.tensor([[0.]])
+    G_q_1 = torch.tensor([[rp["k"]*q[1]]])
+    G_q = torch.cat((G_q_0, G_q_1), dim = 0).to(device)
 
 
     return M_q, G_q 
@@ -43,7 +43,7 @@ def input_matrix() -> Tensor:
         A_q: input matrix of shape (2, )   
     """
 
-    A_q = torch.cat((torch.tensor([1.]), torch.tensor([0.])), dim = 0).unsqueeze(-1)
+    A_q = torch.cat((torch.tensor([1.]), torch.tensor([0.])), dim = 0).unsqueeze(-1).to(device)
 
     return A_q
 
