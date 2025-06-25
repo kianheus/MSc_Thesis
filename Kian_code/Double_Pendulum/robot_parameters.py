@@ -1,7 +1,7 @@
 LUMPED_PARAMETERS = dict(
     l0 = 2.5, #Length of link 1 [m]
     l1 = 2.5, #Length of link 2 [m]
-    m0 = 0.1, #System mass [kg] (attached at the elbow)
+    m0 = 0.0, #System mass [kg] (attached at the elbow)
     m1 = 3., #System mass [kg] (attached at the end of link 2)
     g = 9.81, #Gravitational acceleration [m/s^2]
     xa = 2., #actuator rope attachment point x-location [m]
