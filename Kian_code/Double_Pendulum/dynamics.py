@@ -37,9 +37,9 @@ def dynamical_matrices(rp: dict, q: Tensor, q_d: Tensor) -> Tuple[Tensor, Tensor
     C_q_1 = torch.cat(((-rp["l0"] * rp["l1"] * rp["m1"] * q_d[0] * s01).to(device), C_q_00), dim=0).unsqueeze(0)
     C_q = torch.cat((C_q_0, C_q_1), dim = 0)
     
-    G_q_0 = torch.tensor([rp["g"] * rp["l0"] * (rp["m0"] + rp["m1"])]).unsqueeze(0).to(device)  * c0.to(device)
-    G_q_1 = torch.tensor([rp["g"] * rp["l1"] * rp["m1"]]).unsqueeze(0).to(device)  * c1.to(device)
-    G_q = torch.cat((G_q_0, G_q_1), dim = 0)
+    G_q_0 = torch.tensor([rp["g"] * rp["l0"] * (rp["m0"] + rp["m1"])]).unsqueeze(0).to(device) * c0
+    G_q_1 = torch.tensor([rp["g"] * rp["l1"] * rp["m1"]]).unsqueeze(0).to(device)  * c1
+    G_q = torch.cat((G_q_0, G_q_1), dim = 0).to(device)
 
 
     return M_q, C_q, G_q 
@@ -107,7 +107,7 @@ def input_matrix(rp: dict, q: Tensor) -> Tensor:
     A_q1 = ( (rp["l1"] * torch.sin(q[1]) * Rx - rp["l1"] * torch.cos(q[1]) * Ry) / torch.sqrt(Rx**2 + Ry**2) ).unsqueeze(0).unsqueeze(0)
     A_q = torch.cat((A_q0, A_q1), dim = 0)
 
-    return A_q
+    return A_q.to(device)
 
 
 def jacobian(rp: dict, q: Tensor) -> Tensor:
