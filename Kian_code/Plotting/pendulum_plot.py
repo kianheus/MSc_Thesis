@@ -354,7 +354,7 @@ class Error_plotter:
                 if ps["reference"] is not None:
                     line_handles.append(reference_line)
                 axes[i, col_index].set_title(ps["plot_name"])
-                axes[i, col_index].set_xlabel("time (t)")
+                axes[i, col_index].set_xlabel(r"$\mathrm{time}\ (t)$")
                 axes[i, col_index].set_ylabel(axes_names[col_index][i])
                 axes[i, col_index].legend(handles=line_handles)
                 axes[i, col_index].grid(True, linestyle='--')
