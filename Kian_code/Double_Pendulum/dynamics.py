@@ -44,6 +44,23 @@ def dynamical_matrices(rp: dict, q: Tensor, q_d: Tensor) -> Tuple[Tensor, Tensor
 
     return M_q, C_q, G_q 
 
+def potential_matrix(rp, q):
+    
+    """
+    Calculate just G_q
+    """
+    
+    c0 = torch.cos(q[0]).unsqueeze(0)
+    c1 = torch.cos(q[1]).unsqueeze(0)
+
+    G_q_0 = torch.tensor([rp["g"] * rp["l0"] * (rp["m0"] + rp["m1"])]).unsqueeze(0).to(device) * c0
+    G_q_1 = torch.tensor([rp["g"] * rp["l1"] * rp["m1"]]).unsqueeze(0).to(device)  * c1
+    G_q = torch.cat((G_q_0, G_q_1), dim = 0).to(device)
+
+
+    return G_q 
+
+
 def add_spring_force_G_q(rp: dict, q: Tensor, G_q, k_spring: Tensor, rest_angles: Tensor) -> Tensor:
 
     """
