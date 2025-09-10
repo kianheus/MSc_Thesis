@@ -293,16 +293,20 @@ def plot_model_performance(model, model_ana, plot_dataloader, save_folder, devic
 				#plotters_simple.plot_2d_double(q, [A_th[:, 0], A_th[:, 1]], "Input matrix terms", [r"$A_{0}$", r"$A_{1}$"], r"$q_0$", r"$q_1$", r"$A$", save_folder)
 				#plotters_simple.plot_2d_quad(q, [M_th[:, 0, 0], M_th[:, 0, 1], M_th[:, 1, 0], M_th[:, 1, 1]], r"$M_{\theta}$" + " vs " + r"$q$", 
 				#								[r"$M_{\theta_{0,0}}$", r"$M_{\theta_{0,1}}$", r"$M_{\theta_{1,0}}$", r"$M_{\theta_{1,1}}$"], r"$q_{0}$", r"$q_{1}$", "M_th", save_folder)
-				plotters_simple.plot_2d_single(q, J_norm, "J identity norm terms", "Jacobian identity error", r"$q_0$", r"$q_1$", r"$\|J_{enc}J_{dec} - I\|_F$", save_folder)
-				plotters_simple.plot_2d_single(q, A_th_norm, "A_th norm terms", r"$\boldsymbol{A}_{\theta}(\boldsymbol{\theta})$" + " error", r"$q_0$", r"$q_1$", r"$\|A_{\theta} - [1, 0]^T\|_F$", save_folder)
-				plotters_simple.plot_2d_single(q, M_th_norm, "M_th norm terms", r"$\boldsymbol{M}_{\theta}(\boldsymbol{\theta})$" + " error", r"$q_0$", r"$q_1$", r"$\|M_{\theta} - I_1\|_F$", save_folder)
-				plotters_simple.plot_2d_single(q, q_norm, "q norm terms", r"$\boldsymbol{q}$" + " reconstruction error", r"$q_0$", r"$q_1$", r"$\|\hat{q} - q\|_2$", save_folder)
+				plotters_simple.plot_2d_single(q, J_norm, "J identity norm terms", "Jacobian identity error", r"$q_0$" + " " + r"$(rad)$", r"$q_1$" + " " + r"$(rad)$", r"$\|J_{enc}J_{dec} - I\|_F$" + "   " + r"$(-)$", save_folder)
+				plotters_simple.plot_2d_single(q, A_th_norm, "A_th norm terms", r"${A}_{\theta}({\theta}_L)$" + " error", r"$q_0$" + " " + r"$(rad)$", r"$q_1$" + " " + r"$(rad)$", r"$\|A_{\theta} - [1, 0]^T\|_F$" + "   " + r"$(m)$", save_folder)
+				plotters_simple.plot_2d_single(q, M_th_norm, "M_th norm terms", r"${M}_{\theta}({\theta}_L)$" + " error", r"$q_0$" + " " + r"$(rad)$", r"$q_1$" + " " + r"$(rad)$", r"$\|\tilde{M}_{\theta} - I\|_F$" + "   " + r"$(kg m^2)$", save_folder)
+				plotters_simple.plot_2d_single(q, q_norm, "q norm terms", r"$q$" + " reconstruction error", r"$q_0$" + " " + r"$(rad)$", r"$q_1$" + " " + r"$(rad)$", r"$\|\hat{q} - q\|_2$" + "   " + r"$(rad)$", save_folder)
 				#plotters_simple.plot_2d_single(q, theta_ana[:, 0], "th_0_nn", "analytic " + r"$\theta_0$" + " coordinate", r"$q_0$", r"$q_1$", r"$\theta_{0}$", save_folder)
 				#plotters_simple.plot_2d_single(q, theta_ana[:, 1], "th_0_nn", "analytic " + r"$\theta_1$" + " coordinate", r"$q_0$", r"$q_1$", r"$\theta_{1}$", save_folder)
 				#plotters_simple.plot_2d_single(q, theta[:, 0], "th_0_nn", "learned " + r"$\theta_0$" + " coordinate", r"$q_0$", r"$q_1$", r"$\theta_{0}$", save_folder)
 				#plotters_simple.plot_2d_single(q, theta[:, 1], "th_0_nn", "learned " + r"$\theta_1$" + " coordinate", r"$q_0$", r"$q_1$", r"$\theta_{1}$", save_folder)
 				plotters_simple.plot_2d_quad(q, [theta_ana[:, 0], theta_ana[:, 1], theta[:, 0], theta[:, 1]], "theta vs q q-space", 
-								 			[r"$\theta_{0}$" + " - analytic", r"$\theta_{1}$" + " - analytic", r"$\theta_{0}$" + " - learned", r"$\theta_{1}$" + " - learned"], r"$q_{0}$", r"$q_{1}$", r"$\theta_{1}$", save_folder)
+								 			[r"$\theta_{a}$" + " - analytic" + " " + r"$(m)$", r"$\theta_{u}$" + " - analytic" + " " + r"$(rad)$", r"$\theta_{a}$" + " - learned" + " " + r"$(m)$", r"$\theta_{u}$" + " - learned" + " " + r"$(rad)$"], r"$q_{0}$" + " " + r"$(rad)$", r"$q_{1}$" + " " + r"$(rad)$", None, save_folder)
+				plotters_simple.plot_2d_quad(q, [J_norm, A_th_norm, M_th_norm, q_norm], "mutlimetric vs q q-space", 
+										["J identity norm terms", "A_th norm terms", "M_th norm terms", "q norm terms"], r"$q_{0}$" + " " + r"$(rad)$", r"$q_{1}$" + " " + r"$(rad)$", 
+										[[r"$\|J_{enc}J_{dec} - I\|_F$", r"$q_1$", r"$\|A_{\theta} - [1, 0]^T\|_F$"], [r"$\|\tilde{M}_{\theta} - I\|_F$", r"$\|\hat{q} - q\|_2$"]], save_folder)
+				
 
 				
 			

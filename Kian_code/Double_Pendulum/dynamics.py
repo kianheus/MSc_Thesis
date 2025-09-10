@@ -44,6 +44,22 @@ def dynamical_matrices(rp: dict, q: Tensor, q_d: Tensor) -> Tuple[Tensor, Tensor
 
     return M_q, C_q, G_q 
 
+
+def inertia_matrix(rp, q):
+
+    c0 = torch.cos(q[0]).unsqueeze(0)
+    c1 = torch.cos(q[1]).unsqueeze(0)
+    s01 = torch.sin(q[0]-q[1]).unsqueeze(0)
+    c01 = torch.cos(q[0]-q[1]).unsqueeze(0)
+    
+    M_q_00 = torch.tensor([rp["l0"]**2 * (rp["m0"] + rp["m1"])]).to(device) 
+    M_q_0 = torch.cat((M_q_00, (rp["l0"] * rp["l1"] * rp["m1"] * c01).to(device)), dim = 0).unsqueeze(0)
+    M_q_11 = torch.tensor([rp["l1"]**2 * rp["m1"]]).to(device) 
+    M_q_1 = torch.cat(((rp["l0"] * rp["l1"] * rp["m1"] * c01).to(device), M_q_11), dim = 0).unsqueeze(0)
+    M_q = torch.cat((M_q_0, M_q_1), dim = 0)
+
+    return M_q
+
 def potential_matrix(rp, q):
     
     """

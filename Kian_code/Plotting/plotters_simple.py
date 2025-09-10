@@ -88,7 +88,7 @@ def plot_2d_single(points_tensor, z, plot_title, sub_title, xlabel, ylabel, zlab
     file_name = plot_title.replace(" ", "_") + ".eps"
     file_path = os.path.join(folder_path, file_name)
     csfont = {'fontname':'Times New Roman'}
-    fig, ax = plt.subplots(figsize=(5, 3))
+    fig, ax = plt.subplots(figsize=(5, 2.5))
 
     z = z.cpu()
     sc = ax.scatter(x, y, c=z, cmap="viridis", edgecolor="none")#, norm=matplotlib.colors.LogNorm())
@@ -130,7 +130,7 @@ def plot_2d_double(points_tensor, zs, plot_title, sub_titles, xlabel, ylabel, zl
     plt.show()
 
 
-def plot_2d_quad(points_tensor, zs, plot_title, sub_titles, xlabel, ylabel, zlabel, folder_path):
+def plot_2d_quad(points_tensor, zs, plot_title, sub_titles, xlabel, ylabel, zlabels = None, folder_path = None):
 
     x = points_tensor[:, 0].cpu()
     y = points_tensor[:, 1].cpu()
@@ -139,20 +139,23 @@ def plot_2d_quad(points_tensor, zs, plot_title, sub_titles, xlabel, ylabel, zlab
     file_path = os.path.join(folder_path, file_name)
     csfont = {'fontname':'Times New Roman'}
 
-    fig, axes = plt.subplots(2, 2, figsize=(6, 0.6*8.5))
+    fig, axes = plt.subplots(2, 2, figsize=(5, 0.5*8.5))
     for i in range(2):
         for j in range(2):
             ax = axes[i, j]
             z = zs[2*i + j].cpu()
             sc = ax.scatter(x, y, c=z, cmap="viridis", edgecolor="none")#, norm=matplotlib.colors.LogNorm())
-            ax.set_xlabel(xlabel)
-            ax.set_ylabel(ylabel)
+            ax.set_xlabel(xlabel, labelpad=-5)
+            ax.set_ylabel(ylabel, labelpad=-5)
             ax.grid()
             ax.set_title(sub_titles[2*i+j], **csfont)
-            fig.colorbar(sc, ax=ax, orientation='vertical')
+            if zlabels is not None:
+                fig.colorbar(sc, ax=ax, orientation='vertical', label=zlabels[i][j])
+            else:
+                fig.colorbar(sc, ax=ax, orientation='vertical')
     
     #fig.suptitle(plot_title, fontsize=16, y=0.95)  
     #fig.subplots_adjust(left=0.0, right=0.9, wspace=0.1)  
     plt.tight_layout()
-    plt.savefig(file_path, format='eps')
+    plt.savefig(file_path, format='eps', bbox_inches='tight', pad_inches=0.1)
     plt.show()

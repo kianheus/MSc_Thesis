@@ -179,7 +179,7 @@ class Anim_plotter():
             legend_handles.extend(ref_handles)
 
         # Add legend to the plot
-        ax.legend(handles=legend_handles, loc="upper left", title="Datasets")
+        ax.legend(handles=legend_handles, loc="upper left")#, title="Datasets")
 
         def init(): 
             """Initialize animation elements to empty.""" 
@@ -312,6 +312,7 @@ class Error_plotter:
             line_data = {
                 "name": dataset["name"],
                 "color": dataset["color"],
+                "style": dataset["style"],
                 "y1": dataset["values"][:, 0],
                 "y2": dataset["values"][:, 1]
             }
@@ -330,7 +331,7 @@ class Error_plotter:
         """
         n = len(plot_datasets)  # number of subplot columns
         # Create subplots: 2 rows (one for y1 and one for y2) and n columns.
-        fig, axes = plt.subplots(2, n, figsize=(0.7 * 5 * n, 5))
+        fig, axes = plt.subplots(2, n, figsize=(0.7 * 5 * n, 0.7 / 0.7 * 5))
         
         # When n == 1, axes may be 1D, so force it to be 2D.
         if n == 1:
@@ -348,7 +349,7 @@ class Error_plotter:
                     axes[i, col_index].axhline(ref, color="dimgray", ls="--")
                 line_handles = []
                 for line in ps["data"]:
-                    line_handle, = axes[i, col_index].plot(x, line[ykey], label=line["name"], color=line["color"])
+                    line_handle, = axes[i, col_index].plot(x, line[ykey], label=line["name"], color=line["color"], linestyle=line["style"], lw = 2.5)
                     line_handles.append(line_handle)
                 
                 if ps["reference"] is not None:
@@ -359,11 +360,147 @@ class Error_plotter:
                 axes[i, col_index].legend(handles=line_handles)
                 axes[i, col_index].grid(True, linestyle='--')
 
-        overall_title = "Non-collocated control on learned coordinates"
+        overall_title = "Non-collocated control trajectory, analytic coordinates" 
         fig.suptitle(overall_title, fontsize=16)
         # Adjust layout to make room for the suptitle.
         plt.tight_layout()
 
         # Save and display the figure.
         plt.savefig(save_path+".pdf", format = "pdf")
-        plt.show()
+        #plt.show()
+
+
+from matplotlib.lines import Line2D
+
+class Error_plotter_alt:
+    def __init__(self, rp):
+        """
+        Initialize with robot parameters (not sure if necessary).
+        """
+        self.rp = rp
+
+    def create_plot_dataset(self, t, datasets, reference = None, name = "Plot"):
+        """
+        Prepares a plot dataset for a single subplot column.
+        All datasets passed in will be drawn on the same pair of subplots.
+        
+        Parameters:
+            t: the common x-axis (time) values for all the datasets
+            datasets: a list of dictionaries. Each dictionary should have:
+                - "name": a name for the dataset (e.g. "est_series")
+                - "values": a 2D NumPy array where column 0 is y1 data and column 1 is y2 data
+                - "color": a matplotlib color specifier for the dataset’s line
+            reference: the reference value(s) for the controller
+            name: name of the subplot. displayed at the top of the column
+        
+        Returns:
+            A dictionary (plot_dataset) holding all the information needed for one column of subplots.
+        """
+        # Create a dictionary to hold all the plotting data for one column.
+        plot_dataset = {
+            "plot_name": name,
+            "x": t,
+            "data": [],  # will hold multiple dataset entries (lines) to be plotted together
+            "reference": None if reference is None else reference.cpu().detach().numpy()[0]
+        }
+
+        # Iterate over each dataset and store its info.
+        for dataset in datasets:
+            line_data = {
+                "name": dataset["name"],
+                "color": dataset["color"],
+                "style": dataset["style"],
+                "y1": dataset["values"][:, 0],
+                "y2": dataset["values"][:, 1]
+            }
+            plot_dataset["data"].append(line_data)
+
+        return plot_dataset
+
+
+    def plot_multi(self, plot_datasets, save_path, axes_names, empty=False, legend_locations = [[None, None], [None, None]]):
+        """
+        If empty=True, creates the full grid of axes, with titles, labels, legend entries and correct limits,
+        but without drawing the actual data lines—ready for a “fade-in” animation.
+        """
+        n = len(plot_datasets)
+        fig, axes = plt.subplots(2, n, figsize=(0.7 * 5 * n, 0.7 / 0.7 * 5))
+        if n == 1:
+            axes = axes.reshape(2, 1)
+
+        # Precompute per‐axes limits
+        limits = []  # will be a list of shape [(xmin, xmax, ymin1, ymax1, ymin2, ymax2), ...]
+        for ps in plot_datasets:
+            x = ps["x"]
+            xmin, xmax = x.min(), x.max()
+            # collect all y1 and y2
+            all_y1 = np.concatenate([d["y1"] for d in ps["data"]])
+            all_y2 = np.concatenate([d["y2"] for d in ps["data"]])
+            y1min, y1max = all_y1.min(), all_y1.max()
+            y2min, y2max = all_y2.min(), all_y2.max()
+            # pad by 5%
+            pad1 = 0.05 * (y1max - y1min)
+            pad2 = 0.05 * (y2max - y2min)
+            limits.append((xmin, xmax, y1min - pad1, y1max + pad1,
+                                      y2min - pad2, y2max + pad2))
+
+        for col_index, ps in enumerate(plot_datasets):
+            xmin, xmax, y1min, y1max, y2min, y2max = limits[col_index]
+
+            # Build the proxy handles for legend
+            proxies = []
+            for d in ps["data"]:
+                proxy = Line2D([], [],
+                               color=d["color"],
+                               linestyle=d["style"],
+                               lw=2.5,
+                               label=d["name"])
+                proxies.append(proxy)
+
+            # optionally add reference‐line proxy
+            if ps["reference"] is not None:
+                ref = ps["reference"]
+                ref_proxy = Line2D([], [],
+                                   color="dimgray",
+                                   linestyle="--",
+                                   label="reference")
+                proxies.append(ref_proxy)
+
+            for row in [0, 1]:
+                ax = axes[row, col_index]
+
+                # set identical axes limits
+                ax.set_xlim(xmin, xmax)
+                if row == 0:
+                    ax.set_ylim(y1min, y1max)
+                else:
+                    ax.set_ylim(y2min, y2max)
+
+                # if not empty, draw the real lines & ref‐lines
+                if not empty:
+                    # draw the data
+                    for d in ps["data"]:
+                        ykey = "y1" if row == 0 else "y2"
+                        ax.plot(ps["x"], d[ykey],
+                                color=d["color"],
+                                linestyle=d["style"],
+                                lw=2.5,
+                                label=d["name"])
+                    # draw reference line
+                    if ps["reference"] is not None:
+                        ax.axhline(ref[row],
+                                   color="dimgray",
+                                   linestyle="--")
+
+                # title, labels, grid
+                ax.set_title(ps["plot_name"])
+                ax.set_xlabel(r"$\mathrm{time}\ (t)$")
+                ax.set_ylabel(axes_names[col_index][row])
+                ax.grid(True, linestyle="--")
+                # legend from proxies (so shows up even if empty)
+                ax.legend(handles=proxies, loc=legend_locations[row][col_index])
+
+        #fig.suptitle("Non-collocated control trajectory, analytic coordinates", fontsize=16)
+        plt.tight_layout()
+        plt.savefig(save_path + (("_empty" if empty else "") + ".pdf"), format="pdf")
+        # plt.show()

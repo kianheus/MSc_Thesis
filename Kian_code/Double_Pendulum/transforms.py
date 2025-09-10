@@ -2,6 +2,10 @@ import torch
 from torch import Tensor
 from typing import Tuple
 from functools import partial
+import time
+from . import dynamics
+
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
 def transform_dynamical_from_inverse(M_q: Tensor, C_q: Tensor, G_q: Tensor, theta: Tensor, theta_d: Tensor,
@@ -42,6 +46,32 @@ def transform_dynamical_from_inverse(M_q: Tensor, C_q: Tensor, G_q: Tensor, thet
     
     return M_th, C_th, G_th
 
+
+def transform_M_th(M_q, J_h_inv, J_h_inv_trans):
+
+    M_th = J_h_inv_trans @ M_q @ J_h_inv
+
+    return M_th
+
+def transform_C_th(dM_th, theta_d):
+
+
+    term1 = torch.einsum('ijk,k->ij', dM_th, theta_d[0])
+    term2 = torch.einsum('ikj,k->ij', dM_th, theta_d[0])
+    term3 = torch.einsum('jki,k->ij', dM_th, theta_d[0])
+
+    C_th = 0.5 * (term1 + term2 - term3)
+
+    return C_th
+
+def transform_G_th(G_q, J_h_inv_trans):
+
+    G_th = J_h_inv_trans @ G_q
+
+    
+    return G_th
+
+
 def transform_input_matrix_from_inverse_trans(A_q: Tensor, J_h_inv_trans: Tensor) -> Tensor:
 
     """
@@ -53,6 +83,15 @@ def transform_input_matrix_from_inverse_trans(A_q: Tensor, J_h_inv_trans: Tensor
 
     return A_th
 
+
+def calc_M_th_from_th(th, rp, model, model_cw = False):
+    q_hat = model.decoder_vmap(th, clockwise=model_cw)
+    J_h_inv = model.jacobian_dec(th, model_cw).squeeze(0)
+    J_h_inv_trans = torch.transpose(J_h_inv, 0, 1)
+
+    M_q = dynamics.inertia_matrix(rp, q_hat.squeeze(0))
+    M_th = transform_M_th(M_q, J_h_inv, J_h_inv_trans)
+    return M_th
 
 def analytic_theta_0(rp: dict, q: Tensor) -> Tensor:
     
