@@ -159,7 +159,6 @@ tmp/
 # this allows us to ignore submission archives, but not the data files
 /*.zip
 *.mp4
-*.png
 /Kian_code/Plotting/Pendulum_plots/Clockwise_demo
 *.pth
 *.json
