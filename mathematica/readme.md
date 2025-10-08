@@ -1,26 +1,38 @@
-# Analytic Findings
+# Description
 
-This directory is dedicated to Wolfram Mathematica files which show a number of important properties of the double pendulum system. These are required to prove that inertial- and input decoupling is possible. Furthermore, this allows for the creation of a set of training data. 
+This directory is dedicated to Wolfram Mathematica files which show a number of important properties of the three considered mechanical systems. These are required to prove that partial decoupling of is possible, depending on system dynamics. Furthermore, this allows for the creation of a set of training data. 
 
-This readme gives a short description of the notebooks.
+The mathematica notebooks are calculations for a specific mechanical system, and are thus separated by type. These are the following:
 
-
-## Find_EoMs.nb
-This notebook shows that for a particular choice of new coordinates $\theta = h(q)$, inertial- and input decoupling can be obtained. These coordinates are the length of the actuator tendon $(\theta_0)$, and its angle $(\theta_1)$. 
-
-The resulting mass matrix and input matrix can be determined as follows:
-
-$ M(\theta) = J_h^{-T}(q) M(q) J_h^{-1}(q)$
-
-$ A(\theta) = J_h^{-T}(q) A(q)$
-
-Where $J_h$ is the Jacobian of $h(q)$. 
-
-## Find_phi.nb
-The resulting mass matrix in $\theta$-coordinates $M(\theta)$ is inertially decoupled. However, there is a problem. The mass term of the unactuated DoF depends on the actuated DoF. This prevents a formulation in normal form which would allow non-collocated control. 
-
-In order to overcome this problem, another coordinate change may provide a solution. This set of coordinates has to further decoupled the DoFs so that the terms in $M(\theta)$ only depend on their own DoF. 
+1. **smdp:** single-mass double pendulum, the protagonist of this thesis.
+2. **dmdp:** double-mass double pendulum, a standard double pendulum with point mass at the elbow and end-effector.
+3. **sea:** series-elastic actuator, a simple robotic component. 
 
 
-## Normal_form.nb
-This notebook shows how a formulation of the dynamics in normal form allows one to write a controller for the unactuated DoF $(\theta_1)$. #TODO: FINISH THIS FILE
+<p float="left">
+<img src="../graphics/Three_systems.png" width="100%" />
+</p>
+
+$~~~~~~~~~~~~~~$ 1. smdp  $~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~$ 2. dmdp $~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~$ 3. sea
+## Code overview
+
+### smdp
+1. *find_eoms_smdp.nb* \
+This file analytically derives the equations of motion of the single-mass double pendulum, both in "naive" coordinates as well as in the analytically derived decoupling coordinates. These coordinates are the length of the actuator tendon $(\theta_0)$, and its angle $(\theta_1)$. The resulting mass matrix and input matrix can be determined as follows:\
+\
+$ M(\theta) = J_h^{-T}(q) M(q) J_h^{-1}(q)$\
+\
+$ A(\theta) = J_h^{-T}(q) A(q)$\
+\
+Where $J_h$ is the Jacobian of $h(q)$.
+
+2. *verify_y_iv.nb* \
+This file calculates the first four derivatives of the normal form output of the single-mass double pendulum. These calculations are used to determine feedback linearizing coefficients of the non-collocated controller.
+
+### dmdp
+1. *find_eoms_dmdp.nb* \
+Similarly to the case for the single-mass double pendulum, this notebook attempts to 
+
+### sea
+1. *find_eoms_sea.nb* \
+The decoupling eoms for a series-elastic actuator follow naturally from the standard choice of coordinates, as is illustrated in this notebook. 
