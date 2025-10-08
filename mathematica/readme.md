@@ -13,16 +13,16 @@ The mathematica notebooks are calculations for a specific mechanical system, and
 <img src="../graphics/Three_systems.png" width="100%" />
 </p>
 
-$~~~~~~~~~~~~~~$ 1. smdp  $~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~$ 2. dmdp $~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~$ 3. sea
+The above figure shows: smdp (left), dmdp (center) and sea (right)
 ## Code overview
 
 ### smdp
 1. *find_eoms_smdp.nb* \
 This file analytically derives the equations of motion of the single-mass double pendulum, both in "naive" coordinates as well as in the analytically derived decoupling coordinates. These coordinates are the length of the actuator tendon $(\theta_0)$, and its angle $(\theta_1)$. The resulting mass matrix and input matrix can be determined as follows:\
 \
-$ M(\theta) = J_h^{-T}(q) M(q) J_h^{-1}(q)$\
+$M(\theta) = J_h^{-T}(q) M(q) J_h^{-1}(q)$\
 \
-$ A(\theta) = J_h^{-T}(q) A(q)$\
+$A(\theta) = J_h^{-T}(q) A(q)$\
 \
 Where $J_h$ is the Jacobian of $h(q)$.
 
