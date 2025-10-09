@@ -13,7 +13,7 @@ The mathematica notebooks are calculations for a specific mechanical system, and
 <img src="../graphics/Three_systems.png" width="100%" />
 </p>
 
-The above figure shows: smdp (left), dmdp (center) and sea (right)
+The above figure shows: smdp (left), dmdp (center) and sea (right).
 ## Code overview
 
 ### smdp
