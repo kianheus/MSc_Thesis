@@ -1,0 +1,8 @@
+name: thesis_clean
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - anaconda
+  - python=3.11.10
+  - pytorch::pytorch
